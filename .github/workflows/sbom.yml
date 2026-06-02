@@ -27,5 +27,5 @@ jobs:
         with:
           path: .
           format: cyclonedx-json
-          output-file: docs/sbom.cdx.json
+          output-file: sbom.cdx.json
           artifact-name: sbom.cdx.json
