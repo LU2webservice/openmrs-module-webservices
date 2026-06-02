@@ -1,0 +1,13 @@
+services:
+  openmrs:
+    restart: always
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  db:
+    restart: always
+    ports: !reset []
