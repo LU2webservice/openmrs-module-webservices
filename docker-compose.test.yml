@@ -1,0 +1,12 @@
+services:
+  openmrs:
+    restart: unless-stopped
+    environment:
+      OMRS_ADD_DEMO_DATA: "true"
+    ports:
+      - "8081:8080"
+
+  db:
+    restart: unless-stopped
+    ports:
+      - "3308:3306"
