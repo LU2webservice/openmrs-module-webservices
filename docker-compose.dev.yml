@@ -1,0 +1,12 @@
+services:
+  openmrs:
+    restart: "no"
+    environment:
+      OMRS_DEV_DEBUG_PORT: "1044"
+    ports:
+      - "8080:8080"
+
+  db:
+    restart: "no"
+    ports:
+      - "3307:3306"
