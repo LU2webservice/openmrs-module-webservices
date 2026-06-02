@@ -101,3 +101,6 @@ nb-configuration.xml
 ### Lucene Indices from Tests ###
 /omod-*/org.openmrs.*/*
 >>>>>>> 6846f54 (Initial commit)
+
+### Docker ###
+.env
