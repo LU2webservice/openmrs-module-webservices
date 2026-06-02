@@ -1,12 +1,12 @@
-name: "CodeQL"
+name: "CodeQL Analysis"
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
   schedule:
-    - cron: '30 2 * * 1'
+    - cron: '0 3 * * 1'   # elke maandag 03:00
 
 jobs:
   analyze:
@@ -21,17 +21,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'java' ]   # Verander dit als je ook javascript, python, etc. hebt
+        language: [ 'java' ]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # belangrijk voor PRs
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          # queries: security-extended, security-and-quality   # uncomment voor meer checks
+          # queries: security-extended  # meer checks (optioneel)
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
