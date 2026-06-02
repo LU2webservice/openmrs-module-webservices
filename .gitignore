@@ -104,3 +104,4 @@ nb-configuration.xml
 
 ### Docker ###
 .env
+docker/modules/*.omod

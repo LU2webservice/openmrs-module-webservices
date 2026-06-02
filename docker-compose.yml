@@ -18,6 +18,7 @@ services:
       OMRS_ADMIN_PASSWORD_LOCKED: "true"
     volumes:
       - openmrs-data:/openmrs/data
+      - ./docker/modules:/openmrs/data/modules
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/health"]
       interval: 30s
