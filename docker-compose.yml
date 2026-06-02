@@ -1,6 +1,32 @@
 services:
+  openmrs:
+    image: openmrs/openmrs-core:2.8.x-amazoncorretto-17
+    container_name: openmrs
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      OMRS_DB: mariadb
+      OMRS_DB_HOSTNAME: db
+      OMRS_DB_NAME: ${MYSQL_DATABASE:-openmrs}
+      OMRS_DB_USERNAME: ${MYSQL_USER:-openmrs}
+      OMRS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      OMRS_ADMIN_USER_PASSWORD: ${OMRS_ADMIN_PASSWORD:-Admin123}
+      OMRS_ADMIN_PASSWORD_LOCKED: "true"
+    volumes:
+      - openmrs-data:/openmrs/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/openmrs/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
   db:
-    image: mysql:8.0
+    image: mariadb:10.11
     container_name: openmrs-db
     restart: unless-stopped
     environment:
@@ -12,14 +38,12 @@ services:
       - "3307:3306"
     volumes:
       - db-data:/var/lib/mysql
-    command: >
-      --character-set-server=utf8
-      --collation-server=utf8_general_ci
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
   db-data:
+  openmrs-data:
