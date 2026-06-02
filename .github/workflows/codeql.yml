@@ -1,4 +1,4 @@
-name: "CodeQL Analysis"
+name: "CodeQL"
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '0 3 * * 1'   # elke maandag 03:00
+    - cron: '37 3 * * 1'
 
 jobs:
   analyze:
@@ -27,16 +27,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2   # belangrijk voor PRs
+          fetch-depth: 2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'        # Of 11 als je project Java 11 gebruikt
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn clean compile -DskipTests --no-transfer-progress
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          # queries: security-extended  # meer checks (optioneel)
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
