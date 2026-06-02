@@ -67,7 +67,7 @@ public abstract class ServerLogActionWrapper {
 	public String[] logLinePatternMatcher(String logLine) {
 		String[] logElements = new String[4];
 		// Defined Pattern to analyze
-		String regExPatternType = "(INFO|ERROR|WARN|DEBUG)\\s.*?[-].*?\\s((?:[A-z][A-z].+))\\s[|](.*?)[|]\\s((.*\\n*)+)";
+		String regExPatternType = "(INFO|ERROR|WARN|DEBUG)\\s.*?[-].*?\\s((?:[A-Za-z][A-Za-z].+))\\s[|](.*?)[|]\\s((.*\\n*)+)";
 		try {
 			Pattern pattern = Pattern.compile(regExPatternType);
 			Matcher matcher = pattern.matcher(logLine);
