@@ -11,8 +11,7 @@ echo Copying .omod to docker/modules...
 if not exist "docker\modules" mkdir "docker\modules"
 copy /Y omod\target\webservices.rest-*.omod docker\modules\
 
-echo Restarting OpenMRS to load the module...
-docker compose restart openmrs
-
-echo Done! Check http://localhost:8080/openmrs
+echo Done! Now restart Docker to load the module:
+echo   docker compose down
+echo   docker compose --env-file .env up -d
 pause
