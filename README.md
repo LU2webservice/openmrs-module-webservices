@@ -2,19 +2,19 @@
 
 Fork van de OpenMRS REST module. Doel: beveiligingsopties ontdekken, documenteren en oplossen.
 
-## Opstarten
+## Eerste keer opzetten
 
-Maak een `.env` aan op basis van `.env.example` en vul de wachtwoorden in:
+1. Repo clonen
+2. `.env.example` kopiëren naar `.env` en wachtwoorden invullen
+3. `docker compose --env-file .env up -d`
+4. Wacht ~5 minuten, open http://localhost:8080/openmrs
 
-```bash
-cp .env.example .env
-```
+## Module deployen (voor testen)
 
-```bash
-docker compose --env-file .env up -d
-```
-
-OpenMRS draait op `http://localhost:8080/openmrs`
+1. JDK 8 installeren via [adoptium.net](https://adoptium.net)
+2. `build_module.bat` uitvoeren (bouwt de module en kopieert de `.omod` naar `docker/modules/`)
+3. Docker herstarten: `docker compose down` gevolgd door `docker compose --env-file .env up -d`
+4. Wacht even, check http://localhost:8080/openmrs/ws/rest/v1/session
 
 ## Stoppen
 
@@ -27,19 +27,6 @@ Data ook verwijderen:
 ```bash
 docker compose down -v
 ```
-
-## Module bouwen en installeren
-
-Voer het script uit:
-
-```bash
-build_module.bat
-```
-
-Dit doet automatisch:
-1. Maven build
-2. `.omod` bestand kopiëren naar `docker/modules/`
-3. OpenMRS herstarten
 
 ## Licentie
 
