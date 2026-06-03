@@ -1,0 +1,36 @@
+name: Deploy to OTAP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-dev:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        run: echo "Deploying to dev environment"
+
+  deploy-test:
+    name: Deploy to Test
+    runs-on: ubuntu-latest
+    environment: test
+    needs: deploy-dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        run: echo "Deploying to test environment"
+
+  deploy-prod:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: deploy-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        run: echo "Deploying to prod environment"
