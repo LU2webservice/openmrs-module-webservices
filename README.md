@@ -1,10 +1,8 @@
-# OpenMRS REST Webservices Module — Beveiligingsonderzoek
+# OpenMRS REST Webservices Module - Beveiligingsonderzoek
 
 Dit project is een fork van de officiële [OpenMRS REST Web Services module](https://github.com/openmrs/openmrs-module-webservices.rest). Het doel van dit project is om de beveiligingsopties van de module te **ontdekken, documenteren en waar nodig op te lossen**.
 
 De module stelt de OpenMRS API bloot als REST webservices. Externe applicaties zoals frontends, mobiele apps en andere systemen kunnen via deze module data ophalen en opslaan in een OpenMRS database.
-
----
 
 ## Inhoud
 
@@ -15,15 +13,11 @@ De module stelt de OpenMRS API bloot als REST webservices. Externe applicaties z
 - [Beveiligingsonderzoek](#beveiligingsonderzoek)
 - [Ontwikkelaarsinfo](#ontwikkelaarsinfo)
 
----
-
 ## Vereisten
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Java 17+](https://adoptium.net/)
 - [Maven 3.8+](https://maven.apache.org/)
-
----
 
 ## Opstarten met Docker
 
@@ -38,14 +32,14 @@ cp .env.example .env
 Het `.env` bestand ziet er zo uit:
 
 ```env
-MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_ROOT_PASSWORD=
 MYSQL_DATABASE=openmrs
 MYSQL_USER=openmrs
-MYSQL_PASSWORD=openmrs
-OMRS_ADMIN_PASSWORD=Admin123
+MYSQL_PASSWORD=
+OMRS_ADMIN_PASSWORD=
 ```
 
-> **Let op:** Commit het `.env` bestand nooit naar git. Het staat al in `.gitignore`.
+Commit het `.env` bestand nooit naar git. Het staat al in `.gitignore`.
 
 ### 2. Opstarten
 
@@ -55,7 +49,7 @@ docker compose --env-file .env up -d
 
 OpenMRS is beschikbaar op: `http://localhost:8080/openmrs`
 
-De eerste keer opstarten duurt enkele minuten — OpenMRS initialiseert de database.
+De eerste keer opstarten duurt enkele minuten omdat OpenMRS de database initialiseert.
 
 ### 3. Stoppen
 
@@ -64,16 +58,14 @@ Containers stoppen maar data bewaren:
 docker compose down
 ```
 
-Containers stoppen **en alle data verwijderen** (schone lei):
+Containers stoppen en alle data verwijderen:
 ```bash
 docker compose down -v
 ```
 
----
-
 ## Module bouwen en installeren
 
-### Stap 1 — Bouwen
+### Stap 1 - Bouwen
 
 Navigeer naar de projectmap en bouw de module met Maven:
 
@@ -86,7 +78,7 @@ Dit genereert een `.omod` bestand in:
 omod/target/webservices.rest-*.omod
 ```
 
-### Stap 2 — Module in Docker zetten
+### Stap 2 - Module in Docker zetten
 
 Kopieer het `.omod` bestand naar de `docker/modules` map:
 
@@ -94,7 +86,7 @@ Kopieer het `.omod` bestand naar de `docker/modules` map:
 cp omod/target/webservices.rest-*.omod docker/modules/
 ```
 
-### Stap 3 — Herstarten
+### Stap 3 - Herstarten
 
 ```bash
 docker compose down
@@ -106,28 +98,26 @@ OpenMRS laadt de module automatisch bij het opstarten.
 ### Controleren of de module actief is
 
 ```bash
-curl -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/session
+curl -u gebruikersnaam:wachtwoord http://localhost:8080/openmrs/ws/rest/v1/session
 ```
 
 Als je `"authenticated": true` ziet is alles in orde.
-
----
 
 ## API testen
 
 ### Sessie controleren
 ```bash
-curl -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/session
+curl -u gebruikersnaam:wachtwoord http://localhost:8080/openmrs/ws/rest/v1/session
 ```
 
-### Patiënten zoeken
+### Patienten zoeken
 ```bash
-curl -u admin:Admin123 "http://localhost:8080/openmrs/ws/rest/v1/patient?q=Jan"
+curl -u gebruikersnaam:wachtwoord "http://localhost:8080/openmrs/ws/rest/v1/patient?q=Jan"
 ```
 
 ### Testdata aanmaken
 
-Er staat een seed-script klaar om neppe patiënten aan te maken:
+Er staat een seed-script klaar om neppe patienten aan te maken:
 
 ```powershell
 .\seed_patients.ps1
@@ -140,20 +130,16 @@ De volledige Swagger-documentatie is beschikbaar op:
 http://localhost:8080/openmrs/module/webservices/rest/apiDocs.htm
 ```
 
----
-
 ## Beveiligingsonderzoek
 
 Het doel van dit project is om de beveiliging van de OpenMRS REST module te analyseren. Dit omvat:
 
-- **Authenticatie & Autorisatie** — hoe worden gebruikers geverifieerd, welke rollen hebben toegang tot welke endpoints
-- **Filter-keten** — hoe werken `AuthorizationFilter` en `ContentTypeFilter`, en waar zitten zwakke punten
-- **Input validatie** — worden binnenkomende payloads correct gevalideerd
-- **Foutafhandeling** — worden foutmeldingen veilig afgehandeld zonder gevoelige informatie te lekken
-- **CSRF-bescherming** — hoe werkt de OWASP CSRFGuard integratie
-- **Bevindingen documenteren** — elk gevonden probleem wordt gedocumenteerd met uitleg en oplossing
-
----
+- **Authenticatie en Autorisatie** - hoe worden gebruikers geverifieerd, welke rollen hebben toegang tot welke endpoints
+- **Filter-keten** - hoe werken `AuthorizationFilter` en `ContentTypeFilter`, en waar zitten zwakke punten
+- **Input validatie** - worden binnenkomende payloads correct gevalideerd
+- **Foutafhandeling** - worden foutmeldingen veilig afgehandeld zonder gevoelige informatie te lekken
+- **CSRF-bescherming** - hoe werkt de OWASP CSRFGuard integratie
+- **Bevindingen documenteren** - elk gevonden probleem wordt gedocumenteerd met uitleg en oplossing
 
 ## Ontwikkelaarsinfo
 
@@ -162,7 +148,7 @@ Het doel van dit project is om de beveiliging van de OpenMRS REST module te anal
 Zorg dat OpenMRS draait en voer dan uit:
 
 ```bash
-mvn clean verify -Pintegration-tests -DtestUrl=http://admin:Admin123@localhost:8080/openmrs
+mvn clean verify -Pintegration-tests -DtestUrl=http://gebruikersnaam:wachtwoord@localhost:8080/openmrs
 ```
 
 ### Wiki
@@ -173,6 +159,6 @@ mvn clean verify -Pintegration-tests -DtestUrl=http://admin:Admin123@localhost:8
 | [Technische documentatie](https://wiki.openmrs.org/display/docs/REST+Web+Services+Technical+Documentation) | Technische details van de implementatie |
 | [Core Developer Guide](https://wiki.openmrs.org/display/docs/Adding+a+Web+Service+Step+by+Step+Guide+for+Core+Developers) | Hoe voeg je REST resources toe aan OpenMRS core |
 
-### Licentie
+## Licentie
 
 [MPL-2.0 w/ HD](http://openmrs.org/license/)
