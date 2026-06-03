@@ -1,10 +1,10 @@
 name: Deploy to OTAP
 
+# Draait pas NA de merge naar main (dus niet op de PR zelf).
+# De PR-poort (CodeQL + SBOM) bepaalt of er gemerged mag worden;
+# deze OTAP-straat rolt vervolgens de gemergede main uit.
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
