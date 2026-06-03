@@ -1,2 +1,2 @@
-name: test
+name: test 
 description: Test environment — requires passing CI checks before deploy
