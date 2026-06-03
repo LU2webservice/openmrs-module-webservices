@@ -5,7 +5,7 @@ Fork van de OpenMRS REST module. Doel: beveiligingsopties ontdekken, documentere
 ## Eerste keer opzetten
 
 1. Repo clonen
-2. `.env.example` kopiëren naar `.env` en wachtwoorden invullen
+2. `example.env` kopiëren naar `.env` en wachtwoorden invullen
 3. `docker compose --env-file .env up -d`
 4. Wacht ~5 minuten, open http://localhost:8080/openmrs
 
