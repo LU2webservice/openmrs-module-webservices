@@ -12,6 +12,7 @@ jobs:
   deploy-dev:
     name: Deploy to Dev
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - uses: actions/checkout@v4
       - name: Deploy
@@ -20,6 +21,7 @@ jobs:
   deploy-test:
     name: Deploy to Test
     runs-on: ubuntu-latest
+    environment: test
     needs: deploy-dev
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +31,7 @@ jobs:
   deploy-prod:
     name: Deploy to Prod
     runs-on: ubuntu-latest
+    environment: prod
     needs: deploy-test
     steps:
       - uses: actions/checkout@v4
