@@ -1,80 +1,178 @@
-<<<<<<< HEAD
-# openmrs-module-webservices
-=======
-[![Build Status](https://github.com/openmrs/openmrs-module-webservices.rest/actions/workflows/maven.yml/badge.svg)](https://github.com/openmrs/openmrs-module-webservices.rest/actions/workflows/maven.yml) [![Coverage Status](https://coveralls.io/repos/github/openmrs/openmrs-module-webservices.rest/badge.svg?branch=master)](https://coveralls.io/github/openmrs/openmrs-module-webservices.rest?branch=master)
+# OpenMRS REST Webservices Module — Beveiligingsonderzoek
 
-<img src="https://talk.openmrs.org/uploads/default/original/2X/f/f1ec579b0398cb04c80a54c56da219b2440fe249.jpg" alt="OpenMRS"/>
+Dit project is een fork van de officiële [OpenMRS REST Web Services module](https://github.com/openmrs/openmrs-module-webservices.rest). Het doel van dit project is om de beveiligingsopties van de module te **ontdekken, documenteren en waar nodig op te lossen**.
 
-# OpenMRS REST Web Services Module
+De module stelt de OpenMRS API bloot als REST webservices. Externe applicaties zoals frontends, mobiele apps en andere systemen kunnen via deze module data ophalen en opslaan in een OpenMRS database.
 
-> REST API for [OpenMRS](http://openmrs.org)
+---
 
-<a href="https://ci.openmrs.org/browse/RESTWS-RESTWS"><img src="https://omrs-shields.psbrandt.io/build/RESTWS/RESTWS" alt="Build"/></a>
-<a href="https://modules.openmrs.org/#/show/153/webservices-rest"><img src="https://omrs-shields.psbrandt.io/version/153" alt="Version"/></a>
-<a href="https://modules.openmrs.org/#/show/153/webservices-rest"><img src="https://omrs-shields.psbrandt.io/omrsversion/153" alt="OpenMRS Version"/></a>
+## Inhoud
 
-The module exposes the OpenMRS API as REST web services. If an OpenMRS instance is running the `webservice.rest` module, other applications can retrieve and post certain information to an OpenMRS database.
+- [Vereisten](#vereisten)
+- [Opstarten met Docker](#opstarten-met-docker)
+- [Module bouwen en installeren](#module-bouwen-en-installeren)
+- [API testen](#api-testen)
+- [Beveiligingsonderzoek](#beveiligingsonderzoek)
+- [Ontwikkelaarsinfo](#ontwikkelaarsinfo)
 
-## Download
+---
 
-If you are not a developer, or just want to install the REST Web Services module into your
-system, visit [the module download page](https://modules.openmrs.org/#/show/153/webservices-rest) instead.
+## Vereisten
 
-> The required OpenMRS version to run the REST Web Services Module is `1.8.4+` or `1.9.0+`
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Java 17+](https://adoptium.net/)
+- [Maven 3.8+](https://maven.apache.org/)
 
-## Build
+---
 
-To build the module from source, clone this repo:
+## Opstarten met Docker
 
+### 1. Omgevingsvariabelen instellen
+
+Kopieer het voorbeeld `.env` bestand en pas de wachtwoorden aan:
+
+```bash
+cp .env.example .env
 ```
-git clone https://github.com/openmrs/openmrs-module-webservices.rest
+
+Het `.env` bestand ziet er zo uit:
+
+```env
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_DATABASE=openmrs
+MYSQL_USER=openmrs
+MYSQL_PASSWORD=openmrs
+OMRS_ADMIN_PASSWORD=Admin123
 ```
 
-Then navigate into the `openmrs-module-webservices.rest` directory and compile the module using Maven:
+> **Let op:** Commit het `.env` bestand nooit naar git. Het staat al in `.gitignore`.
 
+### 2. Opstarten
+
+```bash
+docker compose --env-file .env up -d
 ```
-cd openmrs-module-webservices.rest && mvn clean install
+
+OpenMRS is beschikbaar op: `http://localhost:8080/openmrs`
+
+De eerste keer opstarten duurt enkele minuten — OpenMRS initialiseert de database.
+
+### 3. Stoppen
+
+Containers stoppen maar data bewaren:
+```bash
+docker compose down
 ```
 
-:pushpin: You will need Maven and Java 8 installed to successfully build and run
-the tests.
-
-## Developer Documentation
-
-### Integration Tests
-
-Integration tests can be found in the integration-tests directory. They are written with JUnit and Rest-Assured.
-Before you can run integration tests you need to start up a server and install the module.
-You can run integration tests with:
+Containers stoppen **en alle data verwijderen** (schone lei):
+```bash
+docker compose down -v
 ```
+
+---
+
+## Module bouwen en installeren
+
+### Stap 1 — Bouwen
+
+Navigeer naar de projectmap en bouw de module met Maven:
+
+```bash
+mvn clean install -DskipTests
+```
+
+Dit genereert een `.omod` bestand in:
+```
+omod/target/webservices.rest-*.omod
+```
+
+### Stap 2 — Module in Docker zetten
+
+Kopieer het `.omod` bestand naar de `docker/modules` map:
+
+```bash
+cp omod/target/webservices.rest-*.omod docker/modules/
+```
+
+### Stap 3 — Herstarten
+
+```bash
+docker compose down
+docker compose --env-file .env up -d
+```
+
+OpenMRS laadt de module automatisch bij het opstarten.
+
+### Controleren of de module actief is
+
+```bash
+curl -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/session
+```
+
+Als je `"authenticated": true` ziet is alles in orde.
+
+---
+
+## API testen
+
+### Sessie controleren
+```bash
+curl -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/session
+```
+
+### Patiënten zoeken
+```bash
+curl -u admin:Admin123 "http://localhost:8080/openmrs/ws/rest/v1/patient?q=Jan"
+```
+
+### Testdata aanmaken
+
+Er staat een seed-script klaar om neppe patiënten aan te maken:
+
+```powershell
+.\seed_patients.ps1
+```
+
+### API documentatie
+
+De volledige Swagger-documentatie is beschikbaar op:
+```
+http://localhost:8080/openmrs/module/webservices/rest/apiDocs.htm
+```
+
+---
+
+## Beveiligingsonderzoek
+
+Het doel van dit project is om de beveiliging van de OpenMRS REST module te analyseren. Dit omvat:
+
+- **Authenticatie & Autorisatie** — hoe worden gebruikers geverifieerd, welke rollen hebben toegang tot welke endpoints
+- **Filter-keten** — hoe werken `AuthorizationFilter` en `ContentTypeFilter`, en waar zitten zwakke punten
+- **Input validatie** — worden binnenkomende payloads correct gevalideerd
+- **Foutafhandeling** — worden foutmeldingen veilig afgehandeld zonder gevoelige informatie te lekken
+- **CSRF-bescherming** — hoe werkt de OWASP CSRFGuard integratie
+- **Bevindingen documenteren** — elk gevonden probleem wordt gedocumenteerd met uitleg en oplossing
+
+---
+
+## Ontwikkelaarsinfo
+
+### Integratietests uitvoeren
+
+Zorg dat OpenMRS draait en voer dan uit:
+
+```bash
 mvn clean verify -Pintegration-tests -DtestUrl=http://admin:Admin123@localhost:8080/openmrs
 ```
-You can skip the testUrl parameter, if it is the same for your server.
 
-### Wiki Pages
+### Wiki
 
-| Page | Description |
-| ---- | ----------- |
-| [REST Module](https://wiki.openmrs.org/display/docs/REST+Module) | The main module page with a description of the configuration options. |
-| [Technical Documentation](https://wiki.openmrs.org/display/docs/REST+Web+Services+Technical+Documentation) | Technical information about the Web Services implementation. |
-| [Core Developer Guide](https://wiki.openmrs.org/display/docs/Adding+a+Web+Service+Step+by+Step+Guide+for+Core+Developers) | Description of how to add REST resources to OpenMRS core. |
-| [Module Developer Guide](https://wiki.openmrs.org/display/docs/Adding+a+Web+Service+Step+by+Step+Guide+for+Module+Developers) | Description of how to add REST resources to OpenMRS modules. |
+| Pagina | Beschrijving |
+|--------|--------------|
+| [REST Module](https://wiki.openmrs.org/display/docs/REST+Module) | Configuratieopties van de module |
+| [Technische documentatie](https://wiki.openmrs.org/display/docs/REST+Web+Services+Technical+Documentation) | Technische details van de implementatie |
+| [Core Developer Guide](https://wiki.openmrs.org/display/docs/Adding+a+Web+Service+Step+by+Step+Guide+for+Core+Developers) | Hoe voeg je REST resources toe aan OpenMRS core |
 
-### API Documentation
-
-The API documentation is available inside the OpenMRS application and is linked
-to the advanced administration screen. The URL should be something like:
-> [http://localhost:8080/openmrs/module/webservices/rest/apiDocs.htm](http://localhost:8080/openmrs/module/webservices/rest/apiDocs.htm)
-
-### Example Client code
-  * Quick java swing client that displays patients and encounters: http://svn.openmrs.org/openmrs-contrib/examples/webservices/hackyswingexample/
-  * You can download a client java application that allows add/edit a person (any resource) by making a query to the webservices.rest module - https://project-development-software-victor-aravena.googlecode.com/svn/trunk/ClientOpenMRSRest/
-
-### Contributing to the API Documentation
-
-The OpenMRS API documentation is built automatically using [Swagger UI](http://swagger.io/swagger-ui/). For details on how to customize the documentation see the [`swagger-ui` branch](https://github.com/psbrandt/openmrs-contrib-apidocs/tree/swagger-ui) in the [`openmrs-contrib-apidocs` repo](https://github.com/psbrandt/openmrs-contrib-apidocs).
-
-## License
+### Licentie
 
 [MPL-2.0 w/ HD](http://openmrs.org/license/)
->>>>>>> 6846f54 (Initial commit)
