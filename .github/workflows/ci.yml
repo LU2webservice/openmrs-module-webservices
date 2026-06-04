@@ -40,6 +40,7 @@ jobs:
 
       - name: Inject omod into modules dir
         run: |
+          mkdir -p docker/modules
           rm -f docker/modules/*.omod
           cp omod/target/*.omod docker/modules/
 
