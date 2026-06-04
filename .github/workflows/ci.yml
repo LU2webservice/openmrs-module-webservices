@@ -84,7 +84,6 @@ jobs:
   deploy-test:
     name: Deploy to Test
     needs: deploy-dev
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: test
     steps:
@@ -100,7 +99,6 @@ jobs:
   deploy-prod:
     name: Deploy to Prod
     needs: deploy-test
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: prod
     steps:
