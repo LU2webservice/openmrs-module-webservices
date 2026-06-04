@@ -16,8 +16,9 @@ jobs:
     name: Build & smoke test
     runs-on: ubuntu-latest
     env:
-      MYSQL_ROOT_PASSWORD: ci_root_secret
-      MYSQL_PASSWORD: ci_secret
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      OMRS_ADMIN_PASSWORD: ${{ secrets.OMRS_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
