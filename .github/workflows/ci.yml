@@ -1,0 +1,59 @@
+name: CI - PR Gate
+
+# De "portier": draait TIJDENS een pull request naar main.
+# Bouwt de module, draait hem in OpenMRS en doet een echte API-smoketest.
+# Faalt deze check, dan kan de PR niet gemerged worden
+# (mits aangezet via Settings -> Branches -> Require status checks).
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build & smoke test
+    runs-on: ubuntu-latest
+    # Throwaway DB-wachtwoorden: deze containers leven alleen tijdens de CI-run.
+    env:
+      MYSQL_ROOT_PASSWORD: ci_root_secret
+      MYSQL_PASSWORD: ci_secret
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build module
+        run: mvn clean package -DskipTests --no-transfer-progress
+
+      - name: Inject freshly built omod into modules dir
+        run: |
+          rm -f docker/modules/*.omod
+          cp omod/target/*.omod docker/modules/
+          ls -la docker/modules/
+
+      - name: Start OpenMRS stack (test)
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml \
+            up -d --wait --wait-timeout 360
+
+      - name: Smoke test - REST endpoint van de module
+        run: |
+          # /ws/rest/v1/session wordt geleverd DOOR de webservices.rest module.
+          # 200 = OpenMRS draait EN onze module is geladen.
+          curl --fail --silent --show-error --retry 10 --retry-delay 10 --retry-all-errors \
+            http://localhost:8081/openmrs/ws/rest/v1/session
+
+      - name: Show OpenMRS logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml logs openmrs
+
+      - name: Tear down
+        if: always()
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml \
+            down -v

@@ -1,39 +1,59 @@
 name: Deploy to OTAP
 
-# Draait pas NA de merge naar main (dus niet op de PR zelf).
-# De PR-poort (CodeQL + SBOM) bepaalt of er gemerged mag worden;
-# deze OTAP-straat rolt vervolgens de gemergede main uit.
+# De "verhuizer": draait NA de merge naar main.
+# De PR-poort (ci.yml) heeft de code al getest vóór de merge,
+# dus deze straat rolt de getrouwde main uit: dev -> test -> prod.
+# Jobs draaien sequentieel via `needs:`; elke job hangt aan zijn
+# eigen GitHub Environment voor protection rules.
 on:
   push:
     branches:
       - main
 
 jobs:
+  # === DEV: module builden en als artifact bewaren ===
   deploy-dev:
     name: Deploy to Dev
     runs-on: ubuntu-latest
     environment: dev
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy
-        run: echo "Deploying to dev environment"
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build module
+        run: mvn clean package -DskipTests --no-transfer-progress
+
+      - name: Upload omod artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webservices-rest-omod
+          path: omod/target/*.omod
+
+  # === TEST: placeholder voor uitrol naar de test-omgeving ===
   deploy-test:
     name: Deploy to Test
+    needs: deploy-dev
     runs-on: ubuntu-latest
     environment: test
-    needs: deploy-dev
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy
-        run: echo "Deploying to test environment"
+      - name: Placeholder deploy
+        run: echo "Deploy naar test-omgeving (al geverifieerd door de PR-poort)"
 
+  # === PROD: nog geen server -> placeholder met reviewer-gate ===
+  # Zet in Settings -> Environments -> prod een "Required reviewer".
   deploy-prod:
     name: Deploy to Prod
+    needs: deploy-test
     runs-on: ubuntu-latest
     environment: prod
-    needs: deploy-test
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy
-        run: echo "Deploying to prod environment"
+      - name: Placeholder deploy
+        run: echo "Klaar voor productie-deploy (server nog in te richten)"
