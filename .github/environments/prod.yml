@@ -1,2 +1,16 @@
 name: prod
 description: Production environment — requires manual approval before deploy
+
+# Bijbehorende compose: docker-compose.yml + docker-compose.prod.yml
+# LET OP: GitHub leest dit bestand niet automatisch. Dit documenteert
+# de instellingen die in Settings -> Environments -> prod gezet worden.
+protection_rules:
+  required_reviewers:           # deploy wacht op goedkeuring van een reviewer
+    - LU2webservice             # vervang/aanvul met de juiste gebruiker(s) of team
+  wait_timer: 0
+  prevent_self_review: true     # je mag je eigen deploy niet goedkeuren
+
+deployment_branches:
+  policy: selected
+  branches:
+    - main                      # alleen main mag naar productie
