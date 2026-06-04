@@ -1,2 +1,15 @@
-name: test 
+name: test
 description: Test environment — requires passing CI checks before deploy
+
+# Bijbehorende compose: docker-compose.yml + docker-compose.test.yml
+# LET OP: GitHub leest dit bestand niet automatisch. Dit documenteert
+# de instellingen die in Settings -> Environments -> test gezet worden.
+protection_rules:
+  required_reviewers: []        # nog geen review nodig
+  wait_timer: 0
+  prevent_self_review: false
+
+deployment_branches:
+  policy: selected
+  branches:
+    - main

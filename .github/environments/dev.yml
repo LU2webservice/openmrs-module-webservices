@@ -1,2 +1,15 @@
 name: dev
 description: Development environment — no restrictions, free to deploy
+
+# Bijbehorende compose: docker-compose.yml + docker-compose.dev.yml
+# LET OP: GitHub leest dit bestand niet automatisch. Dit documenteert
+# de instellingen die in Settings -> Environments -> dev gezet worden.
+protection_rules:
+  required_reviewers: []        # geen review nodig
+  wait_timer: 0                 # geen wachttijd
+  prevent_self_review: false
+
+deployment_branches:
+  policy: selected
+  branches:
+    - main
