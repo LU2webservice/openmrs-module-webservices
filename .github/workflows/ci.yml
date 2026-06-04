@@ -1,13 +1,10 @@
 name: CI / Deploy Pipeline
 
-# Bij een PR naar main: alleen build-and-test (de "poort").
-# Bij merge naar main:  build-and-test + deploy dev -> test -> prod.
-# Het .omod artifact wordt één keer gebouwd en doorgestuurd naar elke deploy-job.
+# Triggert alleen op pull_request zodat de check-namen geen "(pull_request)"
+# suffix krijgen en branch protection rules correct matchen.
+
 on:
   pull_request:
-    branches:
-      - main
-  push:
     branches:
       - main
 
@@ -16,10 +13,16 @@ jobs:
     name: Build & smoke test
     runs-on: ubuntu-latest
     env:
-      MYSQL_ROOT_PASSWORD: ci_root_secret
-      MYSQL_PASSWORD: ci_secret
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      OMRS_ADMIN_PASSWORD: ${{ secrets.OMRS_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -28,8 +31,18 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Build module
-        run: mvn clean package -DskipTests --no-transfer-progress
+      - name: Build module + unit tests
+        run: mvn clean package --no-transfer-progress
+
+      - name: Upload unit test rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: |
+            omod/target/surefire-reports/
+            omod-common/target/surefire-reports/
+          retention-days: 7
 
       - name: Upload omod artifact
         uses: actions/upload-artifact@v4
@@ -49,10 +62,18 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.test.yml \
             up -d --wait --wait-timeout 360
 
-      - name: Smoke test - REST endpoint
+      - name: Run integration tests
         run: |
-          curl --fail --silent --show-error --retry 10 --retry-delay 10 --retry-all-errors \
-            http://localhost:8081/openmrs/ws/rest/v1/session
+          mvn verify -pl integration-tests -Pintegration-tests --no-transfer-progress \
+            -DtestUrl=http://admin:${{ secrets.OMRS_ADMIN_PASSWORD }}@localhost:8081/openmrs
+
+      - name: Upload integratie test rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-reports
+          path: integration-tests/target/failsafe-reports/
+          retention-days: 7
 
       - name: Show OpenMRS logs on failure
         if: failure()
@@ -61,54 +82,3 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
-
-  deploy-dev:
-    name: Deploy to Dev
-    needs: build-and-test
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: dev
-    steps:
-      - name: Download omod artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: webservices-rest-omod
-          path: artifact/
-
-      - name: Show artifact
-        run: ls -la artifact/
-
-      - name: Deploy to dev
-        run: echo "Klaar voor deploy naar dev (server nog in te richten)"
-
-  deploy-test:
-    name: Deploy to Test
-    needs: deploy-dev
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-      - name: Download omod artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: webservices-rest-omod
-          path: artifact/
-
-      - name: Deploy to test
-        run: echo "Klaar voor deploy naar test (server nog in te richten)"
-
-  deploy-prod:
-    name: Deploy to Prod
-    needs: deploy-test
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - name: Download omod artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: webservices-rest-omod
-          path: artifact/
-
-      - name: Deploy to prod
-        run: echo "Klaar voor productie-deploy (server nog in te richten)"
