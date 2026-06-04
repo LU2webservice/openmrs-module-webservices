@@ -1,11 +1,13 @@
-name: CI - PR Gate
+name: CI / Deploy Pipeline
 
-# De "portier": draait TIJDENS een pull request naar main.
-# Bouwt de module, draait hem in OpenMRS en doet een echte API-smoketest.
-# Faalt deze check, dan kan de PR niet gemerged worden
-# (mits aangezet via Settings -> Branches -> Require status checks).
+# Bij een PR naar main: alleen build-and-test (de "poort").
+# Bij merge naar main:  build-and-test + deploy dev -> test -> prod.
+# Het .omod artifact wordt één keer gebouwd en doorgestuurd naar elke deploy-job.
 on:
   pull_request:
+    branches:
+      - main
+  push:
     branches:
       - main
 
@@ -13,7 +15,6 @@ jobs:
   build-and-test:
     name: Build & smoke test
     runs-on: ubuntu-latest
-    # Throwaway DB-wachtwoorden: deze containers leven alleen tijdens de CI-run.
     env:
       MYSQL_ROOT_PASSWORD: ci_root_secret
       MYSQL_PASSWORD: ci_secret
@@ -30,21 +31,25 @@ jobs:
       - name: Build module
         run: mvn clean package -DskipTests --no-transfer-progress
 
-      - name: Inject freshly built omod into modules dir
+      - name: Upload omod artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webservices-rest-omod
+          path: omod/target/*.omod
+          retention-days: 7
+
+      - name: Inject omod into modules dir
         run: |
           rm -f docker/modules/*.omod
           cp omod/target/*.omod docker/modules/
-          ls -la docker/modules/
 
-      - name: Start OpenMRS stack (test)
+      - name: Start OpenMRS stack
         run: |
           docker compose -f docker-compose.yml -f docker-compose.test.yml \
             up -d --wait --wait-timeout 360
 
-      - name: Smoke test - REST endpoint van de module
+      - name: Smoke test - REST endpoint
         run: |
-          # /ws/rest/v1/session wordt geleverd DOOR de webservices.rest module.
-          # 200 = OpenMRS draait EN onze module is geladen.
           curl --fail --silent --show-error --retry 10 --retry-delay 10 --retry-all-errors \
             http://localhost:8081/openmrs/ws/rest/v1/session
 
@@ -54,6 +59,55 @@ jobs:
 
       - name: Tear down
         if: always()
-        run: |
-          docker compose -f docker-compose.yml -f docker-compose.test.yml \
-            down -v
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
+
+  deploy-dev:
+    name: Deploy to Dev
+    needs: build-and-test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Download omod artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webservices-rest-omod
+          path: artifact/
+
+      - name: Show artifact
+        run: ls -la artifact/
+
+      - name: Deploy to dev
+        run: echo "Klaar voor deploy naar dev (server nog in te richten)"
+
+  deploy-test:
+    name: Deploy to Test
+    needs: deploy-dev
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - name: Download omod artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webservices-rest-omod
+          path: artifact/
+
+      - name: Deploy to test
+        run: echo "Klaar voor deploy naar test (server nog in te richten)"
+
+  deploy-prod:
+    name: Deploy to Prod
+    needs: deploy-test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Download omod artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webservices-rest-omod
+          path: artifact/
+
+      - name: Deploy to prod
+        run: echo "Klaar voor productie-deploy (server nog in te richten)"
