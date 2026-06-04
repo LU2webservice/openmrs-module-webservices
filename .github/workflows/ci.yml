@@ -1,22 +1,16 @@
 name: CI / Deploy Pipeline
 
-# Bij een PR naar main: dependency-review + build-and-test (de "poort").
-# Bij merge naar main:  build-and-test + deploy dev -> test -> prod.
-# Het .omod artifact wordt één keer gebouwd en doorgestuurd naar elke deploy-job.
+# Triggert alleen op pull_request zodat de check-namen geen "(pull_request)"
+# suffix krijgen en branch protection rules correct matchen.
 on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
 
 jobs:
-  # === Controleert of nieuwe dependencies geen bekende kwetsbaarheden bevatten ===
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +19,6 @@ jobs:
         with:
           fail-on-severity: high
 
-  # === Bouwt de module, draait alle tests en bewaart de rapporten ===
   build-and-test:
     name: Build & smoke test
     runs-on: ubuntu-latest
@@ -94,52 +87,3 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
-
-  deploy-dev:
-    name: Deploy to Dev
-    needs: build-and-test
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: dev
-    steps:
-      - name: Download omod artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: webservices-rest-omod
-          path: artifact/
-
-      - name: Show artifact
-        run: ls -la artifact/
-
-      - name: Deploy to dev
-        run: echo "Klaar voor deploy naar dev (server nog in te richten)"
-
-  deploy-test:
-    name: Deploy to Test
-    needs: deploy-dev
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-      - name: Download omod artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: webservices-rest-omod
-          path: artifact/
-
-      - name: Deploy to test
-        run: echo "Klaar voor deploy naar test (server nog in te richten)"
-
-  deploy-prod:
-    name: Deploy to Prod
-    needs: deploy-test
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - name: Download omod artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: webservices-rest-omod
-          path: artifact/
-
-      - name: Deploy to prod
-        run: echo "Klaar voor productie-deploy (server nog in te richten)"
