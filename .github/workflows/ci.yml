@@ -1,6 +1,6 @@
 name: CI / Deploy Pipeline
 
-# Bij een PR naar main: alleen build-and-test (de "poort").
+# Bij een PR naar main: dependency-review + build-and-test (de "poort").
 # Bij merge naar main:  build-and-test + deploy dev -> test -> prod.
 # Het .omod artifact wordt één keer gebouwd en doorgestuurd naar elke deploy-job.
 on:
@@ -12,8 +12,22 @@ on:
       - main
 
 jobs:
+  # === Controleert of nieuwe dependencies geen bekende kwetsbaarheden bevatten ===
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  # === Bouwt de module, draait alle tests en bewaart de rapporten ===
   build-and-test:
-    name: Build & smoke test
+    name: Build & test
     runs-on: ubuntu-latest
     env:
       MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -31,6 +45,16 @@ jobs:
 
       - name: Build module + unit tests
         run: mvn clean package --no-transfer-progress
+
+      - name: Upload unit test rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: |
+            omod/target/surefire-reports/
+            omod-common/target/surefire-reports/
+          retention-days: 7
 
       - name: Upload omod artifact
         uses: actions/upload-artifact@v4
@@ -54,6 +78,14 @@ jobs:
         run: |
           mvn verify -pl integration-tests -Pintegration-tests --no-transfer-progress \
             -DtestUrl=http://admin:${{ secrets.OMRS_ADMIN_PASSWORD }}@localhost:8081/openmrs
+
+      - name: Upload integratie test rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-reports
+          path: integration-tests/target/failsafe-reports/
+          retention-days: 7
 
       - name: Show OpenMRS logs on failure
         if: failure()
