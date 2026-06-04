@@ -27,7 +27,7 @@ jobs:
 
   # === Bouwt de module, draait alle tests en bewaart de rapporten ===
   build-and-test:
-    name: Build & test
+    name: Build & smoke test
     runs-on: ubuntu-latest
     env:
       MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
