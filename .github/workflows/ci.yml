@@ -29,8 +29,8 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Build module
-        run: mvn clean package -DskipTests --no-transfer-progress
+      - name: Build module + unit tests
+        run: mvn clean package --no-transfer-progress
 
       - name: Upload omod artifact
         uses: actions/upload-artifact@v4
@@ -50,10 +50,10 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.test.yml \
             up -d --wait --wait-timeout 360
 
-      - name: Smoke test - REST endpoint
+      - name: Run integration tests
         run: |
-          curl --fail --silent --show-error --retry 10 --retry-delay 10 --retry-all-errors \
-            http://localhost:8081/openmrs/ws/rest/v1/session
+          mvn verify -pl integration-tests -Pintegration-tests --no-transfer-progress \
+            -DtestUrl=http://admin:${{ secrets.OMRS_ADMIN_PASSWORD }}@localhost:8081/openmrs
 
       - name: Show OpenMRS logs on failure
         if: failure()
