@@ -1,28 +1,16 @@
 name: SCA (Software Composition Analysis)
 
-# Software Composition Analysis = controleren van alle (ook transitieve)
-# externe dependencies op bekende kwetsbaarheden (CVE's).
-#
-# Verschil met de Dependency Review in ci.yml:
-#   - Dependency Review kijkt ALLEEN naar dependencies die in een PR wijzigen.
-#   - Deze workflow scant de VOLLEDIGE dependency-boom van het gebouwde artefact,
-#     ook op een schema, zodat nieuw bekend geworden CVE's in bestaande
-#     dependencies alsnog worden opgemerkt ("zero-day van gisteren").
-#
-# Tool: Grype (Anchore). Sluit aan op de Syft-SBOM uit sbom.yml.
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   schedule:
-    # Wekelijks opnieuw scannen: kwetsbaarheidsdatabases worden continu bijgewerkt.
     - cron: '17 4 * * 1'
 
 permissions:
   contents: read
-  security-events: write   # nodig om SARIF naar de Security-tab te uploaden
+  security-events: write
 
 jobs:
   grype-scan:
@@ -39,8 +27,6 @@ jobs:
           java-version: '17'
           cache: maven
 
-      # We bouwen eerst zodat alle (transitieve) jars op schijf staan.
-      # Grype kan ze dan stuk voor stuk catalogiseren i.p.v. alleen pom.xml te lezen.
       - name: Build module (zonder tests)
         run: mvn clean package -DskipTests --no-transfer-progress -q
 
@@ -49,11 +35,8 @@ jobs:
         uses: anchore/scan-action@v6
         with:
           path: "."
-          # Faalt de build bij high/critical. Lager (medium/low) rapporteren we
-          # wel maar laten we de pipeline niet breken.
           fail-build: true
           severity-cutoff: high
-          # .grype.yaml in de repo-root bevat de false-positive onderdrukkingen.
           output-format: sarif
 
       - name: Upload Grype SARIF naar Security-tab

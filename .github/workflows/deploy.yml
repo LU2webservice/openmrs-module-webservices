@@ -1,7 +1,5 @@
 name: Deploy to OTAP
 
-# Triggert alleen na een merge naar main.
-# CI heeft de code al getest via de PR-poort.
 on:
   push:
     branches:

@@ -29,12 +29,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      # === CodeQL init moet VOOR de build ===
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          # config-file bevat de query-suite en de paths-ignore (false-positive-reductie).
           config-file: ./.github/codeql/codeql-config.yml
 
       - name: Set up JDK
