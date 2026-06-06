@@ -1,26 +1,42 @@
 name: Generate SBOM
 
+# SBOM = Software Bill of Materials: een complete inventaris van alle componenten
+# en dependencies in de build. Nodig om (a) achteraf te kunnen bepalen of we een
+# kwetsbaar component bevatten zodra een nieuw CVE bekend wordt, en (b) als
+# leveranciersbewijs richting de OTAP-keten.
+#
+# Tool: Syft (Anchore), output in CycloneDX-formaat (industriestandaard).
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   sbom:
+    name: SBOM met Syft
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java 8
+      # Zelfde JDK als de rest van de pipeline: zo bevat de SBOM exact de
+      # componenten waarmee we ook daadwerkelijk bouwen en deployen.
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '8'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Bouwen vóór de SBOM zodat ook de transitieve jars worden meegenomen,
+      # niet alleen de directe pom-declaraties.
+      - name: Build module (zonder tests)
+        run: mvn clean package -DskipTests --no-transfer-progress -q
 
       - name: Generate SBOM with Syft
         uses: anchore/sbom-action@v0
@@ -29,3 +45,11 @@ jobs:
           format: cyclonedx-json
           output-file: sbom.cdx.json
           artifact-name: sbom.cdx.json
+
+      - name: Upload SBOM als artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json
+          retention-days: 90
