@@ -1,4 +1,4 @@
-# Risk matrix � openmrs-module-webservices.rest
+# Risk matrix openmrs-module-webservices.rest
 
 Dit is de risk matrix (kans x impact) om een beeld te krijgen van de risisco's die een dreiging vormen voor onze module.
 
