@@ -6,22 +6,23 @@ Dit is de risk matrix (kans x impact) om een beeld te krijgen van de risisco's d
 
 # Risicomatrix
 
-| ID      | Risk                      | Kans             | Impact         | Risk (Lik x Imp) |
-| :------ | :------------------------ | :--------------- | :------------- | :--------------- |
-| **S-1** | Basic Auth onderschepping | Waarschijnlijk   | Zeer serieus   | **D4**           |
-| **T-1** | Mass assignment           | Waarschijnlijk   | Zeer serieus   | **D4**           |
-| **S-2** | Sessie-hijacking          | Mogelijk         | Serieus        | **C3**           |
-| **T-2** | Inputvalidatie / injectie | Mogelijk         | Serieus        | **C3**           |
-| **R-1** | Incomplete auditlogging   | Mogelijk         | Serieus        | **C3**           |
-| **I-1** | Stack traces in responses | Mogelijk         | Minder ernstig | **B3**           |
-| **D-1** | Resource exhaustion       | Mogelijk         | Serieus        | **C3**           |
-| **E-2** | Insecure deserialization  | Onwaarschijnlijk | Zeer serieus   | **D2**           |
-| **I-2** | Sensitive data exposure   | Mogelijk         | Serieus        | **C3**           |
+| ID      | Risk                                | Kans                | Impact         | Risk (Kans x Imp) |
+| :------ | :---------------------------------- | :------------------ | :------------- | :---------------- |
+| **I-2** | Unauthenticated systeeminstellingen | Zeer waarschijnlijk | Catastrofaal   | **E5**            |
+| **S-1** | Basic Auth onderschepping           | Waarschijnlijk      | Zeer serieus   | **D4**            |
+| **T-1** | Mass assignment                     | Waarschijnlijk      | Zeer serieus   | **D4**            |
+| **E-1** | Privilege-escalatie via /user       | Waarschijnlijk      | Zeer serieus   | **D4**            |
+| **S-2** | Sessie-hijacking                    | Mogelijk            | Serieus        | **C3**            |
+| **T-2** | Inputvalidatie / injectie           | Mogelijk            | Serieus        | **C3**            |
+| **R-1** | Incomplete auditlogging             | Mogelijk            | Serieus        | **C3**            |
+| **I-1** | Stack traces in responses           | Mogelijk            | Minder ernstig | **B3**            |
+| **D-1** | Onbeperkte resultaatsets            | Mogelijk            | Serieus        | **C3**            |
+| **E-2** | XML Content-Type bypass             | Mogelijk            | Serieus        | **C3**            |
+| **I-3** | Gevoelige data via ?v=full          | Onwaarschijnlijk    | Minder ernstig | **B2**            |
+| **D-2** | Async herstart-misbruik             | Onwaarschijnlijk    | Minder ernstig | **B2**            |
 
 ---
 
-## Evaluatiemethodiek
+<br />
 
-- **Risico (Lik x Imp):** Gebaseerd op de matrix: Kans (1-5) x Impact (1-5).
-- **Kans:** De kans dat het risico voorkomt. Van zeer onwaarschijnlijk en heeft weinig prioriteit naar zeer waarschijnlijk en heeft hoge prioriteit.
-- **Impact:** De schade die een risico meebrengt. Van onbelangrijk en heeft weinig prioriteit naar catastrofaal met een hoge prioriteit.
+![image info](./images/riskmatrix.png)
