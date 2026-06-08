@@ -1,9 +1,8 @@
-# BIV/CIA-risicoanalyse: OpenMRS REST Webservices module
+# Risicocriteria openmrs-module-webservices.rest
 
-**Project:** fork van `openmrs-module-webservices.rest` (v3.2.0). Dit is een REST-API die patiënt- en
-zorggegevens uit OpenMRS beschikbaar maakt onder `/ws/rest/v1/...`.
+Dit zijn de risicocriteria (BIV/CIA) waarmee we de risico's van onze module wegen: de kroonjuwelen, de schaal voor kans en impact, en wanneer we een risico nog accepteren. De module is een REST-API die patiënt- en zorggegevens uit OpenMRS beschikbaar maakt onder `/ws/rest/v1/...`.
 
-**Auteur:** Pluk Zwaal · **Datum:** 2026-06-08
+---
 
 ## 1. BIV-analyse
 
@@ -14,6 +13,8 @@ De module is de toegangspoort naar alle medische data. We kijken naar de drie do
 | **Vertrouwelijkheid** | Toegang loopt via Basic Auth over de REST-laag. De filter stopt nooit zelf (faalt stil) en leunt op de privilege-checks eronder. Credentials gaan als base64 over de lijn; TLS is daarmee noodzakelijk, maar de module dwingt het niet af. | `AuthorizationFilter.java` |
 | **Integriteit** | Volledige CRUD, inclusief purge (hard verwijderen). Een onbevoegde schrijfactie raakt direct het medisch dossier, bijvoorbeeld een medicatie-order. | resource-`api/` interfaces (`Updatable`, `Purgeable`) |
 | **Beschikbaarheid** | Eén centrale ingang voor alle integraties. Er is geen zichtbare rate-limiting, dus zware `?v=full`-queries kunnen het systeem overbelasten (DoS). | `RestConstants.java` |
+
+---
 
 ## 2. Kroonjuwelen (met referenties)
 
@@ -28,6 +29,8 @@ De gegevens met de hoogste waarde, met verwijzing naar het endpoint in de bronco
 
 Wie het IAM-domein of de secrets in handen krijgt, heeft daarmee indirect toegang tot alle andere
 kroonjuwelen.
+
+---
 
 ## 3. Risicocriteria en scoreschaal
 
@@ -64,6 +67,8 @@ De code is de combinatie van beide, bijvoorbeeld **E5** (hoogste) of **B2** (laa
 | **C Serieus** | Middel | Middel | Middel | Hoog | Hoog |
 | **B Minder ernstig** | Laag | Laag | Middel | Middel | Hoog |
 | **A Verwaarloosbaar** | Laag | Laag | Laag | Laag | Middel |
+
+---
 
 ## 4. Risicoregister (toegepast)
 
@@ -102,6 +107,8 @@ IP-allowlist raken dit endpoint dus niet eens, wat het juist erger maakt.
 > Ter controle ook bekeken: `/apiDocs/debug?tag=` (`SwaggerDocController`) reflecteert input maar
 > gebruikt `HtmlUtils.htmlEscape()` en is dus **niet** kwetsbaar voor XSS.
 
+---
+
 ## 5. Risicobereidheid en grenswaarden
 
 Omdat het om bijzondere persoonsgegevens gaat, houden we een **lage risicobereidheid** aan.
@@ -126,6 +133,8 @@ meteen een plan van aanpak nodig (geen alleen-accepteren).
 | Hoog | Security officer of risico-eigenaar, met gedocumenteerd plan van aanpak en deadline. |
 | Middel | Risico-eigenaar (teamlead). |
 | Laag | Team zelf; vastleggen volstaat. |
+
+---
 
 ## Referenties
 
