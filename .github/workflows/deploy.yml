@@ -90,15 +90,17 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.yml -f docker-compose.test.yml down -v
 
-      - name: Stabilisatiepauze
-        run: sleep 300
-
   deploy-prod:
     name: Deploy to Prod
     needs: deploy-test
     runs-on: ubuntu-latest
+    # De prod-environment vereist handmatige goedkeuring van een reviewer.
+    # Die wordt ingesteld in Settings -> Environments -> prod (required reviewers).
     environment: prod
     steps:
+      - name: Wachttijd voor productie (5 minuten)
+        run: sleep 300
+
       - name: Download omod artifact
         uses: actions/download-artifact@v4
         with:

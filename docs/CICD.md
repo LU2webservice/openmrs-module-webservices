@@ -45,11 +45,17 @@ Pull request naar main
    merge naar main
         |
         v
-   deploy.yml   dev -> test -> prod
+   deploy.yml
+        |
+        |-- dev    bouwen
+        |-- test   testen
+        |-- prod   5 minuten wachten + handmatige goedkeuring, dan uitrollen
 ```
 
 Eerst wordt alles gecontroleerd. Pas als dat goed gaat en iemand de pull request
-goedkeurt, mag de code naar main. Daarna rolt deploy.yml het vanzelf uit.
+goedkeurt, mag de code naar main. Daarna rolt deploy.yml het vanzelf uit: eerst
+bouwen op dev, dan testen op test, en als laatste naar prod met een wachttijd en een
+handmatige goedkeuring.
 
 ## De belangrijkste keuzes op een rij
 
@@ -162,18 +168,29 @@ SBOM.
 ## deploy.yml: uitrollen (OTAP)
 
 Draait pas nadat de code naar main is gemerged, dus als alle verplichte checks groen
-waren.
+waren. De drie stappen lopen achter elkaar; gaat een stap mis, dan stopt het en komt
+het niet verder.
 
-1. Dev: de module wordt gebouwd en klaargezet.
-2. Test: de module gaat op een testomgeving en de integratietests draaien daar nog
-   een keer tegen een echte OpenMRS-stack.
-3. Prod: pas als test goed gaat, gaat het naar productie.
+1. Dev: hier wordt de module gebouwd en klaargezet. Dit is de bouwstap.
+2. Test: de gebouwde module gaat op een testomgeving en de integratietests draaien
+   daar nog een keer tegen een echte OpenMRS-stack. Dit is de teststap.
+3. Prod: hier wachten we eerst 5 minuten en is er een handmatige goedkeuring nodig
+   voordat het naar productie gaat.
 
 Keuze: we rollen in stappen uit (dev, test, prod) en niet in een keer naar productie.
 Waarom: bij een ziekenhuissysteem wil je een fout vangen voordat hij bij echte
-patientgegevens komt. Gaat een eerdere stap mis, dan stopt het en komt het niet
-verder. De echte deploy naar de server is nu nog een placeholder en vullen we in
-zodra de servers er zijn.
+patientgegevens komt. Elke omgeving heeft een eigen rol: dev om te bouwen, test om
+te testen, prod voor de echte uitrol.
+
+Keuze: voor productie wachten we 5 minuten en moet iemand handmatig goedkeuren.
+Waarom: dit is een laatste rem voordat we aan het echte systeem met patientgegevens
+komen. De wachttijd geeft rust om de teststap nog te controleren, en de handmatige
+goedkeuring zorgt dat een mens bewust ja zegt. Niemand kan zijn eigen wijziging
+goedkeuren (self-review staat uit). De goedkeuring stel je in onder
+Settings, Environments, prod (required reviewers).
+
+De echte deploy naar de server is nu nog een placeholder en vullen we in zodra de
+servers er zijn.
 
 ## Wat blokkeert wel en wat niet
 
@@ -184,6 +201,12 @@ voordat je kunt mergen. Dit zijn ze:
 - Analyze (java) (uit codeql.yml)
 - SBOM met Syft (uit sbom.yml)
 
+Daarnaast staat in de branch protection dat een pull request altijd door iemand
+anders goedgekeurd moet worden voordat hij gemerged mag worden. Niemand zet dus in
+zijn eentje code op main. Voor een ziekenhuissysteem is dat belangrijk: er kijkt
+altijd een tweede persoon mee. Deze instelling staat onder Settings, Branches, bij de
+regel voor main (Require a pull request before merging, met minstens 1 goedkeuring).
+
 De SCA-scan (Grype dependency scan) staat hier bewust niet bij als verplicht, en de
 workflow zelf laat de pijplijn ook niet falen. De reden staat hierboven bij sca.yml:
 hij kan afgaan op een lek in een OpenMRS-library die wij niet kunnen updaten. Het lek
@@ -192,6 +215,9 @@ blijft wel zichtbaar in de Security-tab, dus we verliezen geen zicht.
 De regel die we hierin volgen: een check blokkeert alleen als het iets is dat wij
 zelf kunnen oplossen. Onze eigen code en onze eigen nieuwe libraries: blokkeren. Iets
 diep in OpenMRS waar wij niet bij kunnen: tonen, niet blokkeren.
+
+Zo zitten er twee menselijke controles in: een goedkeuring op de pull request voordat
+het naar main gaat, en een goedkeuring op prod voordat het echt wordt uitgerold.
 
 ## False positives
 
