@@ -11,9 +11,9 @@ De module is de toegangspoort naar alle medische data. We kijken naar de drie do
 
 | Dimensie | Wat we zien in dit project | Referentie |
 |----------|----------------------------|------------|
-| **Vertrouwelijkheid** | Toegang loopt via Basic Auth over de REST-laag. De filter blokkeert zelf niets en vertrouwt op de privilege-checks eronder. Credentials zijn alleen base64, dus TLS is verplicht. | [AuthorizationFilter.java](../omod-common/src/main/java/org/openmrs/module/webservices/rest/web/filter/AuthorizationFilter.java) |
+| **Vertrouwelijkheid** | Toegang loopt via Basic Auth over de REST-laag. De filter blokkeert zelf niets en vertrouwt op de privilege-checks eronder. Credentials zijn alleen base64, dus TLS is verplicht. | `AuthorizationFilter.java` |
 | **Integriteit** | Volledige CRUD, inclusief purge (hard verwijderen). Een onbevoegde schrijfactie raakt direct het medisch dossier, bijvoorbeeld een medicatie-order. | resource-`api/` interfaces (`Updatable`, `Purgeable`) |
-| **Beschikbaarheid** | Eén centrale ingang voor alle integraties. Er is geen zichtbare rate-limiting, dus zware `?v=full`-queries kunnen het systeem overbelasten (DoS). | [RestConstants.java](../omod-common/src/main/java/org/openmrs/module/webservices/rest/web/RestConstants.java) |
+| **Beschikbaarheid** | Eén centrale ingang voor alle integraties. Er is geen zichtbare rate-limiting, dus zware `?v=full`-queries kunnen het systeem overbelasten (DoS). | `RestConstants.java` |
 
 ## 2. Kroonjuwelen (met referenties)
 
@@ -21,17 +21,17 @@ De gegevens met de hoogste waarde, met verwijzing naar het endpoint in de bronco
 
 | Kroonjuweel | AVG-classificatie | Referentie |
 |-------------|-------------------|------------|
-| **Observaties, consulten en medicatie** (Obs, Encounter, Order) | Gezondheidsgegevens (AVG art. 9) | [ObsResource](../omod/src/main/java/org/openmrs/module/webservices/rest/web/v1_0/resource/openmrs1_8/ObsResource1_8.java) · [EncounterResource](../omod/src/main/java/org/openmrs/module/webservices/rest/web/v1_0/resource/openmrs1_8/EncounterResource1_8.java) · [OrderResource](../omod/src/main/java/org/openmrs/module/webservices/rest/web/v1_0/resource/openmrs1_8/OrderResource1_8.java) |
-| **Patiënt- en persoonsgegevens** (NAW, identifiers) | Persoonsgegevens (PII) | [PatientResource](../omod/src/main/java/org/openmrs/module/webservices/rest/web/v1_0/resource/openmrs1_8/PatientResource1_8.java) · [PatientIdentifierResource](../omod/src/main/java/org/openmrs/module/webservices/rest/web/v1_0/resource/openmrs1_8/PatientIdentifierResource1_8.java) |
-| **Gebruikers, rollen en privileges** | Authenticatie / IAM | [UserResource](../omod/src/main/java/org/openmrs/module/webservices/rest/web/v1_0/resource/openmrs1_8/UserResource1_8.java) · [RoleResource](../omod/src/main/java/org/openmrs/module/webservices/rest/web/v1_0/resource/openmrs1_8/RoleResource1_8.java) |
-| **Secrets** (DB-wachtwoorden en dergelijke) | Secrets | `example.env` / `.env` ([README](../README.md)) |
+| **Observaties, consulten en medicatie** (Obs, Encounter, Order) | Gezondheidsgegevens (AVG art. 9) | `ObsResource1_8`, `EncounterResource1_8`, `OrderResource1_8` |
+| **Patiënt- en persoonsgegevens** (NAW, identifiers) | Persoonsgegevens (PII) | `PatientResource1_8`, `PatientIdentifierResource1_8` |
+| **Gebruikers, rollen en privileges** | Authenticatie / IAM | `UserResource1_8`, `RoleResource1_8` |
+| **Secrets** (DB-wachtwoorden en dergelijke) | Secrets | `example.env` / `.env` |
 
 Wie het IAM-domein of de secrets in handen krijgt, heeft daarmee indirect toegang tot alle andere
 kroonjuwelen.
 
 ## 3. Risicocriteria en scoreschaal
 
-We gebruiken dezelfde schaal als onze [risicomatrix](riskassesment/risk-matrix.md): elk risico krijgt een **kans**
+We gebruiken dezelfde schaal als onze risicomatrix: elk risico krijgt een **kans**
 (cijfer 1 t/m 5) en een **impact** (letter A t/m E). De impact is de zwaarste van de drie BIV-dimensies.
 De code is de combinatie van beide, bijvoorbeeld **E5** (hoogste) of **B2** (laag).
 
@@ -67,7 +67,7 @@ De code is de combinatie van beide, bijvoorbeeld **E5** (hoogste) of **B2** (laa
 
 ## 4. Risicoregister (toegepast)
 
-De risico's uit onze [risicomatrix](riskassesment/risk-matrix.md), met dezelfde STRIDE-ID's en codes. De BIV-kolom
+De risico's uit onze risicomatrix, met dezelfde STRIDE-ID's en codes. De BIV-kolom
 geeft aan welke dimensie het zwaarst geraakt wordt.
 
 | ID | Risico | BIV | Code | Klasse |
@@ -85,7 +85,7 @@ geeft aan welke dimensie het zwaarst geraakt wordt.
 | I-3 | Gevoelige data via `?v=full` | V | B2 | Laag |
 | D-2 | Async herstart-misbruik | B | B2 | Laag |
 
-De hoogste risico's (I-2, S-1, T-1, E-1) zijn verder uitgewerkt in de [gap-analyses](auditrapport/01-gap-analyse.md).
+De hoogste risico's (I-2, S-1, T-1, E-1) zijn verder uitgewerkt in de gap-analyses.
 
 ## 5. Risicobereidheid en grenswaarden
 
@@ -104,6 +104,6 @@ voor de klasse Hoog al meteen een plan van aanpak nodig (geen alleen-accepteren)
 
 ## Referenties
 
-- Authenticatie en constanten: [AuthorizationFilter.java](../omod-common/src/main/java/org/openmrs/module/webservices/rest/web/filter/AuthorizationFilter.java), [RestConstants.java](../omod-common/src/main/java/org/openmrs/module/webservices/rest/web/RestConstants.java)
+- Authenticatie en constanten: `AuthorizationFilter.java`, `RestConstants.java`
 - Kaders: AVG art. 9 (bijzondere persoonsgegevens) en art. 33 en 34 (meldplicht datalekken), NEN 7510 (informatiebeveiliging in de zorg)
-- OpenMRS REST docs: <https://wiki.openmrs.org/display/docs/WebServices>
+- OpenMRS REST docs: wiki.openmrs.org/display/docs/WebServices
