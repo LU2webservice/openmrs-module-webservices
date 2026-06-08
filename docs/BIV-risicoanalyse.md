@@ -107,8 +107,18 @@ Omdat het om bijzondere persoonsgegevens gaat, houden we een **lage risicobereid
 | Laag | B2, B1, A4 t/m A1 | Acceptabel. In de gaten houden. |
 
 **Harde grenswaarde:** alles in de klasse **Hoog of Kritiek** dragen we niet zonder een vastgelegde
-acceptatie door de risico-eigenaar. Raakt een risico **gezondheidsgegevens of IAM/secrets**, dan is
-voor de klasse Hoog al meteen een plan van aanpak nodig (geen alleen-accepteren).
+acceptatie. Raakt een risico **gezondheidsgegevens of IAM/secrets**, dan is voor de klasse Hoog al
+meteen een plan van aanpak nodig (geen alleen-accepteren).
+
+**Wie keurt welk risico goed:** een acceptatie geldt alleen als die op het juiste niveau is vastgelegd
+(wie, wanneer, waarom) en periodiek wordt herbeoordeeld.
+
+| Klasse | Wie mag accepteren |
+|--------|--------------------|
+| Kritiek | Niet acceptabel. Alleen met expliciete goedkeuring van de eindverantwoordelijke (product owner / security officer). |
+| Hoog | Security officer of risico-eigenaar, met gedocumenteerd plan van aanpak en deadline. |
+| Middel | Risico-eigenaar (teamlead). |
+| Laag | Team zelf; vastleggen volstaat. |
 
 ## Referenties
 
