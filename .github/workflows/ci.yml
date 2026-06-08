@@ -1,8 +1,5 @@
 name: CI / Deploy Pipeline
 
-# Triggert alleen op pull_request zodat de check-namen geen "(pull_request)"
-# suffix krijgen en branch protection rules correct matchen.
-
 on:
   pull_request:
     branches:

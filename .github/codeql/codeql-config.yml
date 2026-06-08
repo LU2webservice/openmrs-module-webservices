@@ -1,0 +1,16 @@
+name: "CodeQL config"
+
+# Configuratie voor de SAST-scan (CodeQL).
+#
+# - 'queries': we draaien naast de standaard-security-queries ook de uitgebreide
+#   set, zodat zwakkere plekken (en codekwaliteit-issues) eerder opvallen.
+# - 'paths-ignore': testcode en integratietests scannen we niet als productiecode.
+#   Dat scheelt ruis (false positives) zonder de productie-attackoppervlakte te missen.
+
+queries:
+  - uses: security-and-quality
+
+paths-ignore:
+  - "**/src/test/**"
+  - "integration-tests/**"
+  - "**/target/**"

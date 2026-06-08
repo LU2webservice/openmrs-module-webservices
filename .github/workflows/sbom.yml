@@ -6,21 +6,26 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   sbom:
+    name: SBOM met Syft
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java 8
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '8'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build module (zonder tests)
+        run: mvn clean package -DskipTests --no-transfer-progress -q
 
       - name: Generate SBOM with Syft
         uses: anchore/sbom-action@v0
@@ -29,3 +34,11 @@ jobs:
           format: cyclonedx-json
           output-file: sbom.cdx.json
           artifact-name: sbom.cdx.json
+
+      - name: Upload SBOM als artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json
+          retention-days: 90
