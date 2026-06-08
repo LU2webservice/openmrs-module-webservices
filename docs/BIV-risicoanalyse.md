@@ -72,20 +72,28 @@ geeft aan welke dimensie het zwaarst geraakt wordt.
 
 | ID | Risico | BIV | Code | Klasse |
 |----|--------|:---:|:----:|--------|
-| I-2 | Unauthenticated systeeminstellingen opvraagbaar | V | E5 | Kritiek |
+| I-2 | Unauthenticated systeeminstellingen opvraagbaar (`SettingsFormController`, endpoint `settings.form/search`) | V | E5 | Kritiek |
+| I-4 | Onbeveiligd `settings.form/search` lekt global properties inclusief **secrets** (wachtwoorden, API-keys); geen auth-check | V | E5 | Kritiek |
 | S-1 | Basic Auth onderschepping (base64, geen TLS afgedwongen) | V | D4 | Kritiek |
 | T-1 | Mass assignment bij het schrijven van resources | I | D4 | Kritiek |
 | E-1 | Privilege-escalatie via `/user` | V | D4 | Kritiek |
+| I-5 | Onbeveiligd `/session/diag` lekt rollen/privileges + recon-info; `token`-param wordt niet gecontroleerd | V | C4 | Hoog |
 | S-2 | Sessie-hijacking | V | C3 | Middel |
 | T-2 | Inputvalidatie / injectie | I | C3 | Middel |
 | R-1 | Incomplete auditlogging | I | C3 | Middel |
 | D-1 | Onbeperkte resultaatsets (geen rate-limiting) | B | C3 | Middel |
-| E-2 | XML Content-Type bypass | V | C3 | Middel |
+| D-3 | Brute-force op wachtwoord-reset (`/passwordreset/{activationkey}`, geen rate-limiting/lockout) | V | C3 | Middel |
+| E-2 | XML Content-Type bypass (blacklist-filter blokkeert alleen "xml") | V | C3 | Middel |
 | I-1 | Stack traces in responses | V | B3 | Middel |
 | I-3 | Gevoelige data via `?v=full` | V | B2 | Laag |
 | D-2 | Async herstart-misbruik | B | B2 | Laag |
 
-De hoogste risico's (I-2, S-1, T-1, E-1) zijn verder uitgewerkt in de gap-analyses.
+De hoogste risico's (I-2, I-4, S-1, T-1, E-1) zijn verder uitgewerkt in de gap-analyses.
+
+> **Aanvullende bevindingen uit de broncode** (nieuw t.o.v. de oorspronkelijke risicomatrix):
+> I-4, I-5 en D-3 zijn concrete, in de code aangetroffen kwetsbaarheden. Ter controle ook bekeken:
+> `/apiDocs/debug?tag=` (`SwaggerDocController`) reflecteert input maar gebruikt `HtmlUtils.htmlEscape()`
+> en is dus **niet** kwetsbaar voor XSS.
 
 ## 5. Risicobereidheid en grenswaarden
 
@@ -105,4 +113,5 @@ voor de klasse Hoog al meteen een plan van aanpak nodig (geen alleen-accepteren)
 ## Referenties
 
 - Authenticatie en constanten: `AuthorizationFilter.java`, `RestConstants.java`
+- Aangetroffen kwetsbaarheden: `SettingsFormController.java` (I-2, I-4), `SessionController1_9.java` (I-5), `PasswordResetController2_2.java` (D-3), `ContentTypeFilter.java` (E-2)
 - Kaders: AVG art. 9 (bijzondere persoonsgegevens) en art. 33 en 34 (meldplicht datalekken), NEN 7510 (informatiebeveiliging in de zorg)
