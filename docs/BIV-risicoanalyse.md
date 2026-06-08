@@ -106,4 +106,3 @@ voor de klasse Hoog al meteen een plan van aanpak nodig (geen alleen-accepteren)
 
 - Authenticatie en constanten: `AuthorizationFilter.java`, `RestConstants.java`
 - Kaders: AVG art. 9 (bijzondere persoonsgegevens) en art. 33 en 34 (meldplicht datalekken), NEN 7510 (informatiebeveiliging in de zorg)
-- OpenMRS REST docs: wiki.openmrs.org/display/docs/WebServices
