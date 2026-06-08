@@ -11,7 +11,7 @@ kloppen (false positives).
 | CI/CD tooling | Build en tests bij elke pull request, en automatisch uitrollen na een merge | ci.yml en deploy.yml |
 | SAST | CodeQL scant onze eigen code | codeql.yml |
 | SBOM | Syft maakt een lijst van alle onderdelen | sbom.yml |
-| SCA | Nog opnieuw in te richten | nog te maken |
+| SCA | Grype scant externe libraries op lekken | sca.yml |
 | False positives | Beleid (zie onderaan) | dit bestand |
 
 Alle workflows staan in de map .github/workflows.
@@ -24,6 +24,7 @@ Pull request naar main
         |-- ci.yml      build plus unit- en integratietests
         |-- codeql.yml  scan eigen code (SAST)
         |-- sbom.yml    lijst van onderdelen (SBOM)
+        |-- sca.yml     scan externe libraries (SCA)
         |
         |  alle checks groen en iemand keurt de pull request goed
         v
@@ -77,10 +78,21 @@ Draait bij elke push en pull request naar main.
 Waarom dit handig is: als er later een nieuw lek bekend wordt, kun je in deze lijst
 gelijk opzoeken of dat onderdeel in onze build zit.
 
-## SCA: nog opnieuw in te richten
+## sca.yml: externe libraries scannen (SCA)
 
-De SCA-scan (externe libraries op lekken controleren) wordt opnieuw gemaakt. Hier
-komt straks de uitleg te staan zodra de workflow er weer is.
+Draait bij elke push en pull request naar main, en verder elke maandag.
+
+1. De module wordt gebouwd.
+2. Grype controleert alle libraries tegen een database met bekende lekken.
+3. De resultaten gaan naar de Security-tab en worden als rapport bewaard.
+
+Deze check laat de pipeline bewust niet falen (fail-build staat op false). Een lek
+in een OpenMRS-dependency die we zelf niet kunnen updaten mag de build namelijk niet
+blokkeren. Het lek blijft wel zichtbaar in de Security-tab.
+
+Verschil met stap 2 van ci.yml: die kijkt alleen naar libraries die in de pull
+request veranderen. Grype scant alles, en ook elke week. Zo zien we ook lekken die
+pas later bekend worden in libraries die er al langer in zitten.
 
 ## deploy.yml: uitrollen (OTAP)
 
@@ -105,18 +117,21 @@ zelf niet kunnen oplossen omdat het uit OpenMRS komt. De afspraak:
 - Is het een terechte uitzondering of kunnen we het niet oplossen, dan zetten we
   die ene melding uit met een reden en een datum erbij.
 
-Voor CodeQL doen we dat door het alert in de Security-tab af te wijzen met een
-reden. We zetten dus nooit een hele check uit, alleen losse meldingen met uitleg.
-Zo kun je later terugvinden waarom iets is genegeerd.
+Voor CodeQL en Grype doen we dat door het alert in de Security-tab af te wijzen met
+een reden. We zetten dus nooit een hele check uit, alleen losse meldingen met
+uitleg. Zo kun je later terugvinden waarom iets is genegeerd.
 
 ## Over de checks bij een pull request
 
 Bij een pull request zie je soms meer regels dan er workflows zijn. Dat klopt:
 
-- De workflows hierboven geven elk hun eigen check.
-- Daarnaast maakt GitHub zelf nog een regel met de naam "Code scanning results",
-  zodra CodeQL zijn resultaten naar de Security-tab stuurt. Dat is geen extra
-  workflow.
+- De vier workflows hierboven geven elk hun eigen check.
+- Daarnaast maakt GitHub zelf nog regels met de naam "Code scanning results", zodra
+  CodeQL en Grype hun resultaten naar de Security-tab sturen. Dat zijn geen extra
+  workflows.
 
 In de branch protection van main staan de checks die verplicht groen moeten zijn
-voor je kunt mergen: Build & smoke test, Analyze (java) en SBOM met Syft.
+voor je kunt mergen: Build & smoke test, Analyze (java) en SBOM met Syft. De
+SCA-scan (Grype) staat daar bewust niet bij als verplicht en laat de pipeline ook
+niet falen, omdat hij kan afgaan op een lek in een OpenMRS-dependency die we zelf
+niet kunnen updaten. Het lek blijft wel zichtbaar in de Security-tab.
