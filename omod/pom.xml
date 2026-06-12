@@ -81,30 +81,8 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<executions>
-					<!-- Combineer de meetdata van omod-common en omod tot één bestand.
-					     Veel klassen uit omod-common worden namelijk pas écht getest
-					     door de tests in omod. Pas samengevoegd zie je de echte dekking. -->
-					<execution>
-						<id>merge-coverage</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>merge</goal>
-						</goals>
-						<configuration>
-							<destFile>${project.build.directory}/jacoco-aggregate.exec</destFile>
-							<fileSets>
-								<fileSet>
-									<directory>${project.basedir}/..</directory>
-									<includes>
-										<include>**/target/jacoco.exec</include>
-									</includes>
-								</fileSet>
-							</fileSets>
-						</configuration>
-					</execution>
 					<!-- De gate: faalt de build als de instructie-dekking van de
-					     omod-module (gevoed met de samengevoegde meetdata) onder de
-					     norm zakt. Hier zit vrijwel alle REST-code. -->
+					     omod-module onder de norm zakt. Hier zit vrijwel alle REST-code. -->
 					<execution>
 						<id>coverage-check</id>
 						<phase>verify</phase>
@@ -112,7 +90,6 @@
 							<goal>check</goal>
 						</goals>
 						<configuration>
-							<dataFile>${project.build.directory}/jacoco-aggregate.exec</dataFile>
 							<rules>
 								<rule>
 									<element>BUNDLE</element>

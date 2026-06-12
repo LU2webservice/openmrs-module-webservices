@@ -475,7 +475,7 @@
 						<!-- 2. Maak per module een leesbaar rapport (HTML + XML + CSV)
 						     in target/site/jacoco. Dit toont de dekking die de eigen
 						     tests van die module halen. Het echte, gecombineerde
-						     cijfer komt uit het aggregaat-rapport in de omod-module. -->
+						     cijfer komt uit het rapport in de coverage-report-module. -->
 						<execution>
 							<id>report</id>
 							<phase>prepare-package</phase>

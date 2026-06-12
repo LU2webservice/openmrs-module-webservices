@@ -53,7 +53,6 @@
 							<goal>report-aggregate</goal>
 						</goals>
 						<configuration>
-							<!-- Reken ook de testklassen niet mee als productiecode -->
 							<title>Rest Web Services - gecombineerde code coverage</title>
 							<outputDirectory>${project.build.directory}/site/jacoco-aggregate</outputDirectory>
 						</configuration>

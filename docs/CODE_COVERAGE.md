@@ -30,8 +30,8 @@ JaCoCo doet het volgende (zie de pom.xml-bestanden):
 
 1. Tijdens de tests bijhouden welke code wordt uitgevoerd (prepare-agent).
 2. Per module een rapport maken (report).
-3. In de omod-module de meetdata van beide modules samenvoegen (merge) en daarop de
-   ondergrens bewaken (check). Dit is de gate.
+3. In de omod-module de ondergrens bewaken (check): zakt de dekking van die module
+   onder de norm, dan faalt de build. Dit is de gate.
 4. In een aparte module coverage-report een gecombineerd rapport maken
    (report-aggregate): het totaalcijfer over beide modules samen.
 
