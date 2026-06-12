@@ -50,6 +50,11 @@
 		<apacheTomcatVersion>6.0.53</apacheTomcatVersion>
 		<javaxVersion>4.0.1</javaxVersion>
 		<jacksonVersion>2.19.1</jacksonVersion>
+		<!-- Minimale code coverage (instructie-dekking) waar de build op faalt als
+		     het eronder zakt. Gemeten stand is ~83% gecombineerd (86% op de omod-
+		     module die de gate bewaakt); de lat ligt daar net onder als regressie-
+		     bewaking. Onderbouwing staat in docs/CODE_COVERAGE.md -->
+		<jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
 	</properties>
 
 	<!-- TODO: combine/simplify the "dependencyManagement" and "dependency" sections into a single "dependency" section and test/remove any unneeded dependencies -->
@@ -456,18 +461,28 @@
 						</includes>
 					</configuration>
 					<executions>
+						<!-- 1. Zet de JaCoCo-agent klaar zodat tijdens de unit tests
+						     wordt bijgehouden welke regels code worden uitgevoerd.
+						     Dit geldt voor elke module die deze plugin gebruikt
+						     (omod-common en omod). -->
 						<execution>
 							<id>prepare-agent</id>
 							<goals>
 								<goal>prepare-agent</goal>
 							</goals>
 						</execution>
+						<!-- 2. Maak per module een leesbaar rapport (HTML + XML + CSV)
+						     in target/site/jacoco. Dit toont de dekking die de eigen
+						     tests van die module halen. Het echte, gecombineerde
+						     cijfer komt uit het aggregaat-rapport in de omod-module. -->
+						<execution>
+							<id>report</id>
+							<phase>prepare-package</phase>
+							<goals>
+								<goal>report</goal>
+							</goals>
+						</execution>
 					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.eluder.coveralls</groupId>
-					<artifactId>coveralls-maven-plugin</artifactId>
-					<version>4.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>com.mycila</groupId>
