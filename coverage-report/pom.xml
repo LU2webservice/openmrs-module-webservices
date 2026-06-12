@@ -33,6 +33,15 @@
 
 	<build>
 		<plugins>
+			<!-- Zelfde license-header als de andere modules (ligt in de projectroot,
+			     niet in deze submap). -->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<header>${project.parent.basedir}/license-header.txt</header>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
