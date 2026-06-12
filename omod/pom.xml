@@ -102,19 +102,6 @@
 							</fileSets>
 						</configuration>
 					</execution>
-					<!-- Gecombineerd, leesbaar rapport (HTML + XML + CSV) over beide
-					     code-modules samen. Dit is het "headline" coverage-rapport en
-					     wordt door de CI als artefact bewaard. -->
-					<execution>
-						<id>aggregate-report</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>report-aggregate</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/site/jacoco-aggregate</outputDirectory>
-						</configuration>
-					</execution>
 					<!-- De gate: faalt de build als de instructie-dekking van de
 					     omod-module (gevoed met de samengevoegde meetdata) onder de
 					     norm zakt. Hier zit vrijwel alle REST-code. -->

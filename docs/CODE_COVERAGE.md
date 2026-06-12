@@ -24,17 +24,23 @@ onze eigen build en CI — er gaat geen code of meetdata naar een externe partij
 ## Hoe het is opgezet
 
 De module heeft twee code-delen: `omod-common` (basis) en `omod` (vrijwel alle
-REST-code én de meeste tests). JaCoCo doet drie dingen (zie `pom.xml`):
+REST-code én de meeste tests). JaCoCo doet (zie de `pom.xml`-bestanden):
 
-1. **meten** tijdens de tests (`prepare-agent`);
-2. een **rapport** maken per module (`report`);
-3. in de `omod`-module de meetdata van beide modules **samenvoegen** (`merge` +
-   `report-aggregate`) en de ondergrens **bewaken** (`check`).
+1. **meten** tijdens de tests (`prepare-agent`), per module;
+2. een **rapport** per module (`report`);
+3. de **gate** in `omod`: de meetdata van beide modules wordt **samengevoegd**
+   (`merge`) en daarop wordt de ondergrens **bewaakt** (`check`);
+4. één **gecombineerd rapport** in een aparte module `coverage-report`
+   (`report-aggregate`) — het eerlijke totaalcijfer over beide modules samen.
 
 **Waarom samenvoegen?** Veel klassen in `omod-common` worden pas getest door de tests
 in `omod`. Los gemeten lijkt `omod-common` daardoor maar 16% getest, terwijl het in
-werkelijkheid 73% is. Pas samengevoegd krijg je een eerlijk cijfer. Daarom bewaken we
-de gecombineerde meetdata, niet elke module apart.
+werkelijkheid 72% is. Pas samengevoegd krijg je een eerlijk cijfer.
+
+**Waarom een aparte `coverage-report`-module?** JaCoCo's `report-aggregate` rapporteert
+de *dependencies* van de module waarin hij draait. Daarom hebben we een kleine extra
+module gemaakt die zowel `omod-common` als `omod` als dependency heeft; alleen zo komen
+beide in één rapport terecht. Dit is de gangbare aanpak voor multi-module-projecten.
 
 ## De ondergrens: 80%
 
@@ -49,7 +55,10 @@ Gemeten stand (unit tests van beide modules samen):
 | Onderdeel | Instructie-dekking |
 |-----------|--------------------|
 | `omod`-klassen — **dit bewaakt de gate** | **86,6%** |
-| Gecombineerd (omod-common + omod) | 82,8% |
+| Gecombineerd (omod-common + omod), 337 klassen | 82,8% |
+
+De gate bewaakt de `omod`-module (waar vrijwel alle REST-code zit); het gecombineerde
+rapport laat het totaalcijfer over beide modules zien.
 
 Waarom 80%:
 
@@ -71,14 +80,15 @@ request** (de gate hoort vóór de merge; de deploy daarna is puur uitrollen). H
 wordt bewaard als artefact **`code-coverage-report`**.
 
 Vinden: **Actions → de `CI / Deploy Pipeline`-run → onderaan bij Artifacts →
-`code-coverage-report`**. Uitpakken en `jacoco-aggregate/index.html` openen voor het
-klikbare overzicht per package en klasse.
+`code-coverage-report`**. Uitpakken en
+`coverage-report/target/site/jacoco-aggregate/index.html` openen voor het klikbare
+totaaloverzicht per package en klasse.
 
 ## Zelf draaien
 
 ```bash
 mvn clean verify                          # bouwen + tests + rapport + de 80%-gate
-# rapport: omod/target/site/jacoco-aggregate/index.html
+# gecombineerd rapport: coverage-report/target/site/jacoco-aggregate/index.html
 
 mvn clean verify -Djacoco.minimum.coverage=0   # wel meten, niet falen op de grens
 ```

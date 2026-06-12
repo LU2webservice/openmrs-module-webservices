@@ -34,6 +34,7 @@
 	<modules>
 		<module>omod-common</module>
 		<module>omod</module>
+		<module>coverage-report</module>
 		<module>integration-tests</module>
 	</modules>
 

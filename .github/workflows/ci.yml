@@ -47,7 +47,7 @@ jobs:
         with:
           name: code-coverage-report
           path: |
-            omod/target/site/jacoco-aggregate/
+            coverage-report/target/site/jacoco-aggregate/
             omod/target/site/jacoco/
             omod-common/target/site/jacoco/
           retention-days: 7
