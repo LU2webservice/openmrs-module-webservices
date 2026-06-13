@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.openmrs.module</groupId>
+		<artifactId>webservices.rest</artifactId>
+		<version>3.2.0</version>
+	</parent>
+	<artifactId>webservices.rest-coverage-report</artifactId>
+	<packaging>pom</packaging>
+	<name>Rest Web Services Code Coverage Report</name>
+	<description>
+		Aparte module die alleen één gecombineerd code coverage-rapport maakt over
+		omod-common én omod samen. Dit is nodig omdat JaCoCo per module meet, terwijl
+		veel klassen uit omod-common pas door de tests in omod worden geraakt. Door
+		beide modules hier als dependency op te nemen, neemt report-aggregate ze allebei
+		mee en krijg je het eerlijke totaalcijfer.
+	</description>
+
+	<!-- Beide code-modules als dependency, zodat report-aggregate hun klassen
+	     én hun meetdata (jacoco.exec) meeneemt in één rapport. -->
+	<dependencies>
+		<dependency>
+			<groupId>${project.parent.groupId}</groupId>
+			<artifactId>${project.parent.artifactId}-omod-common</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.parent.groupId}</groupId>
+			<artifactId>${project.parent.artifactId}-omod</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Zelfde license-header als de andere modules (ligt in de projectroot,
+			     niet in deze submap). -->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<header>${project.parent.basedir}/license-header.txt</header>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>aggregate-report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report-aggregate</goal>
+						</goals>
+						<configuration>
+							<title>Rest Web Services - gecombineerde code coverage</title>
+							<outputDirectory>${project.build.directory}/site/jacoco-aggregate</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
