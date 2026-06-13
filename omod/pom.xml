@@ -94,10 +94,17 @@
 								<rule>
 									<element>BUNDLE</element>
 									<limits>
+										<!-- Is de regel uitgevoerd? -->
 										<limit>
 											<counter>INSTRUCTION</counter>
 											<value>COVEREDRATIO</value>
 											<minimum>${jacoco.minimum.coverage}</minimum>
+										</limit>
+										<!-- Zijn beide takken van elke if/else getest? -->
+										<limit>
+											<counter>BRANCH</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.minimum.branch}</minimum>
 										</limit>
 									</limits>
 								</rule>

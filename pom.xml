@@ -51,11 +51,13 @@
 		<apacheTomcatVersion>6.0.53</apacheTomcatVersion>
 		<javaxVersion>4.0.1</javaxVersion>
 		<jacksonVersion>2.19.1</jacksonVersion>
-		<!-- Minimale code coverage (instructie-dekking) waar de build op faalt als
-		     het eronder zakt. Gemeten stand is ~83% gecombineerd (86% op de omod-
-		     module die de gate bewaakt); de lat ligt daar net onder als regressie-
-		     bewaking. Onderbouwing staat in docs/CODE_COVERAGE.md -->
+		<!-- Minimale code coverage waar de build op faalt als het eronder zakt.
+		     De gate let op de omod-module. Gemeten: 86% instructie- en 74% branch-
+		     dekking; de drempels liggen daar net onder als regressie-bewaking.
+		     Branch-dekking = zijn beide takken van een if/else getest, niet alleen
+		     of de regel is uitgevoerd. Onderbouwing staat in docs/CODE_COVERAGE.md -->
 		<jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
+		<jacoco.minimum.branch>0.65</jacoco.minimum.branch>
 	</properties>
 
 	<!-- TODO: combine/simplify the "dependencyManagement" and "dependency" sections into a single "dependency" section and test/remove any unneeded dependencies -->

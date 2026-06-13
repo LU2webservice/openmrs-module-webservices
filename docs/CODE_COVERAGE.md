@@ -48,11 +48,19 @@ meerdere modules.
 
 ## De ondergrens: 80%
 
-De grens staat als een property boven in pom.xml:
+De grenzen staan als properties boven in pom.xml:
 
 ```xml
 <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
+<jacoco.minimum.branch>0.65</jacoco.minimum.branch>
 ```
+
+We bewaken twee dingen. De eerste, instructie-dekking, kijkt of een regel code is
+uitgevoerd door een test. De tweede, branch-dekking, kijkt of bij elke keuze in de code
+(een if/else) allebei de uitkomsten getest zijn, en niet alleen de gewone weg. Het kan
+namelijk dat alle regels wel een keer zijn uitgevoerd, maar dat het "wat als het anders
+loopt"-geval nooit getest is. Juist daar zitten vaak de foutpaden. Branch-dekking is
+daarom strenger en ligt lager: omod zit op 74% branch, dus de grens staat op 65%.
 
 De gemeten stand, met de tests van beide modules samen:
 
