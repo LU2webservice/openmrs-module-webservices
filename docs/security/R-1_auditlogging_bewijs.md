@@ -7,7 +7,7 @@
 > 3. de **echte output** als bewijs,
 > 4. en waar alles staat, zodat het volledig herleidbaar is.
 >
-> Korte samenvatting vooraf: **13 tests, allemaal groen.** ✅
+> Korte samenvatting vooraf: **14 tests, allemaal groen.** ✅
 
 | | |
 |---|---|
@@ -75,9 +75,9 @@ De uitkomst (`outcome`) heeft drie mogelijke waarden:
 
 ## 3. De tests
 
-Ik heb **twee** testbestanden gemaakt. Samen zijn dat **13 tests**.
+Ik heb **twee** testbestanden gemaakt. Samen zijn dat **14 tests**.
 
-### 3.1 `AuditLogTest`: test het log-hulpje zelf (7 tests)
+### 3.1 `AuditLogTest`: test het log-hulpje zelf (8 tests)
 
 📄 `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/audit/AuditLogTest.java`
 
@@ -91,6 +91,7 @@ Je hoeft dus geen logbestand met de hand te lezen, en dát maakt het "testbaar".
 | `denied_leavesAuditTrailWithDeniedOutcome` | geweigerde actie geeft een regel met `outcome=DENIED` | **Mislukt** |
 | `failure_leavesAuditTrailWithFailedOutcome` | mislukte actie geeft een regel met `outcome=FAILED` | **Mislukt** |
 | `formatMessage_doesNotLeakSensitivePasswordValue` | de regel bevat nooit "password" of "secret" | **Gevoelige data** |
+| `formatMessage_neutralisesLineBreaksToPreventLogForging` | regeleindes in user-input vervalsen geen nepregel (CWE-117) | **Log injectie** |
 | `record_usesXForwardedForWhenPresent` | achter een proxy log ik het echte client-IP | Extra |
 | `formatMessage_producesAllFieldsInOrder` | de regel klopt **exact** (vaste volgorde) | Extra |
 
@@ -127,9 +128,9 @@ mvn -o -pl omod-common -am test -Dtest=AuditLogTest,MainResourceControllerAuditT
 ### 4.2 Resultaat: alle tests slagen
 
 ```
-[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 -- in ...rest.web.audit.AuditLogTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in ...rest.web.audit.AuditLogTest
 [INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0 -- in ...controller.MainResourceControllerAuditTest
-[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -191,15 +192,42 @@ gerepareerde code. Daarmee bewijst de test dat de logging er écht toe doet.
 
 ---
 
+## 4b. Extra fix: log injectie afgevangen (CodeQL, CWE-117)
+
+Toen ik een pull request opende, gaf de CI-scanner **CodeQL** een waarschuwing op mijn logregel:
+*"This log entry depends on a user-provided value"* (Log Injection, CWE-117).
+
+Dat klopte. Mijn regel bevat waarden die een gebruiker kan beïnvloeden (`resource`, `uuid` en
+vooral het IP uit de `X-Forwarded-For`-header). Als zo'n waarde een regeleinde (`\r\n`) bevat,
+zou een aanvaller een **nepregel** in het logboek kunnen schrijven en zo het logboek vervalsen
+(log forging).
+
+**Oplossing:** voor het loggen maak ik elke gebruikerswaarde schoon. Regeleindes en andere
+control-tekens haal ik eruit, zodat een auditregel altijd op **één regel** blijft staan:
+
+```java
+// in AuditLog.java
+private static String sanitize(String value) {
+    return value.replaceAll("[\\r\\n]", "_").replaceAll("\\p{Cntrl}", "");
+}
+```
+
+Dit dek ik af met de test `formatMessage_neutralisesLineBreaksToPreventLogForging`: ik stop
+expres een regeleinde plus een nepregel in de input en controleer dat het resultaat geen `\n`
+of `\r` meer bevat en dus één regel blijft.
+
+---
+
 ## 5. Voldoen we aan de eisen? (controle)
 
 | Eis | Voldaan? | Bewijs |
 |---|---|---|
-| Tests voor de logging | ✅ | 2 testbestanden, 13 tests |
+| Tests voor de logging | ✅ | 2 testbestanden, 14 tests |
 | **Succesvolle** acties getest | ✅ | tests met `outcome=SUCCESS` (DELETE, PURGE, UPDATE, CREATE) |
 | **Mislukte** acties getest | ✅ | `outcome=DENIED` (geen rechten) en `outcome=FAILED` (serverfout) |
 | **Afwezigheid van gevoelige gegevens** | ✅ | 3 tests bewijzen dat een wachtwoord nooit in de regel staat |
-| **Alle tests slagen** | ✅ | `Tests run: 13, Failures: 0, Errors: 0` |
+| **Veilig tegen log injectie (CWE-117)** | ✅ | CodeQL-bevinding opgelost, eigen test bewijst het |
+| **Alle tests slagen** | ✅ | `Tests run: 14, Failures: 0, Errors: 0` |
 
 ### Koppeling met NEN-7510 / ISO 27002 beheersmaatregel 8.15 (Logging)
 
@@ -221,7 +249,8 @@ gerepareerde code. Daarmee bewijst de test dat de logging er écht toe doet.
 | Wie / wat / wanneer / IP | onbekend | allemaal in de regel |
 | Onderscheid gelukt of mislukt | niet aanwezig | `outcome=SUCCESS/DENIED/FAILED` |
 | Wachtwoord in log | risico | nooit (getest) |
-| Te testen? | nee | ja, 13 tests, allemaal groen |
+| Log injectie (CWE-117) | mogelijk | afgevangen (getest) |
+| Te testen? | nee | ja, 14 tests, allemaal groen |
 
 De test `noRecordCall_leavesNoAuditTrail` legt de **oude** situatie vast (0 regels).
 Alle andere tests bewijzen de **nieuwe** situatie. Zo zie je het verschil binnen de tests zelf.

@@ -168,6 +168,22 @@ public class AuditLogTest {
 		assertFalse("audit line must not contain a secret", line.toLowerCase().contains("secret"));
 	}
 
+	/**
+	 * Defence against log injection / log forging (CWE-117): a user-provided value that contains a
+	 * line break must never produce a second log line. The result must stay on one line.
+	 */
+	@Test
+	public void formatMessage_neutralisesLineBreaksToPreventLogForging() {
+		Instant when = Instant.parse("2026-06-15T10:00:00Z");
+		String forged = "real-uuid\r\nAUDIT action=DELETE resource=patient uuid=fake outcome=SUCCESS";
+
+		String line = AuditLog.formatMessage("DELETE", "patient", forged, Outcome.SUCCESS, "admin", "127.0.0.1", when);
+
+		assertFalse("must not contain a line feed", line.contains("\n"));
+		assertFalse("must not contain a carriage return", line.contains("\r"));
+		assertEquals("the whole audit entry must stay on a single line", 1, line.split("\n").length);
+	}
+
 	// --------------------------------------------------------------------- //
 	// Misc behaviour
 	// --------------------------------------------------------------------- //

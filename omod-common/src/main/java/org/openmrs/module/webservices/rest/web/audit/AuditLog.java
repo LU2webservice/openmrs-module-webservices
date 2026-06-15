@@ -131,9 +131,10 @@ public class AuditLog {
 	 */
 	public static String formatMessage(String action, String resource, String uuid, Outcome outcome, String user,
 	        String ip, Instant when) {
-		return String.format("%s action=%s resource=%s uuid=%s outcome=%s when=%s user=%s ip=%s", MARKER,
-		    blankToUnknown(action), blankToUnknown(resource), blankToUnknown(uuid), outcome == null ? UNKNOWN
-		            : outcome.name(), when == null ? UNKNOWN : when.toString(), blankToUnknown(user), blankToUnknown(ip));
+		// All user-provided values are cleaned to prevent log injection / log forging (CWE-117).
+		return String.format("%s action=%s resource=%s uuid=%s outcome=%s when=%s user=%s ip=%s", MARKER, clean(action),
+		    clean(resource), clean(uuid), outcome == null ? UNKNOWN : outcome.name(), when == null ? UNKNOWN
+		            : when.toString(), clean(user), clean(ip));
 	}
 
 	/**
@@ -171,5 +172,23 @@ public class AuditLog {
 
 	private static String blankToUnknown(String value) {
 		return StringUtils.isBlank(value) ? UNKNOWN : value;
+	}
+
+	/**
+	 * Returns a value that is safe to put into a single log line: blanks become "unknown" and any
+	 * line breaks or other control characters are removed.
+	 */
+	private static String clean(String value) {
+		return sanitize(blankToUnknown(value));
+	}
+
+	/**
+	 * Neutralises line breaks (CR/LF) and other control characters. This is the defence against log
+	 * injection / log forging (CWE-117): without it, a user-provided value containing a newline could
+	 * inject a forged second audit line into the log.
+	 */
+	private static String sanitize(String value) {
+		// replace CR and LF first (the actual forging vector), then strip any remaining control chars
+		return value.replaceAll("[\\r\\n]", "_").replaceAll("\\p{Cntrl}", "");
 	}
 }
