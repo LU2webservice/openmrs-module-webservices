@@ -1,0 +1,72 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" version="29.3.8">
+  <diagram name="Pagina-1" id="F4xyfbdBUFhi-f3uTxf2">
+    <mxGraphModel dx="1623" dy="1036" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-15" edge="1" parent="1" source="6DGwr_F3aBoFGpObGFAX-1" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-17" edge="1" parent="1" source="6DGwr_F3aBoFGpObGFAX-1" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-38" edge="1" parent="1" source="6DGwr_F3aBoFGpObGFAX-1" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-36">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6DGwr_F3aBoFGpObGFAX-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" value="Privilege-escalatie via /user" vertex="1">
+          <mxGeometry height="140" width="140" x="344" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Onvolledige autorisatiechecks bij API-verzoeken die gebruikersgegevens aanpassen" vertex="1">
+          <mxGeometry height="80" width="120" x="354" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-13" edge="1" parent="1" source="Obj8d_O0rm5UT-2CFnJ8-2" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;" value="Ontbreken van strikte rol-validatie&amp;nbsp;in de &lt;code data-path-to-node=&quot;2,3,1,0&quot; data-index-in-node=&quot;58&quot;&gt;/user&lt;/code&gt; controller" vertex="1">
+          <mxGeometry height="60" width="120" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-14" edge="1" parent="1" source="Obj8d_O0rm5UT-2CFnJ8-3" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="6DGwr_F3aBoFGpObGFAX-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Elke rol wijziging verplicht valideren via Context.hasPrivilege()" vertex="1">
+          <mxGeometry height="60" width="120" x="160" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-16" edge="1" parent="1" source="Obj8d_O0rm5UT-2CFnJ8-4" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Directe analyse van logs voor ongebruikelijke rolwijzigingen" vertex="1">
+          <mxGeometry height="60" width="120" x="550" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Omzeiling van autorisatiecontroles" vertex="1">
+          <mxGeometry height="60" width="120" x="707" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-29" edge="1" parent="1" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="670" y="420" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-34" edge="1" parent="1" source="Obj8d_O0rm5UT-2CFnJ8-32" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-32" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;" value="Request data vertrouwen" vertex="1">
+          <mxGeometry height="60" width="120" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-35" edge="1" parent="1" source="Obj8d_O0rm5UT-2CFnJ8-33" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="6DGwr_F3aBoFGpObGFAX-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Automatische unit testen" vertex="1">
+          <mxGeometry height="60" width="120" x="160" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-39" edge="1" parent="1" source="Obj8d_O0rm5UT-2CFnJ8-36" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;endArrow=none;endFill=0;" target="Obj8d_O0rm5UT-2CFnJ8-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Terugdraaien van de gebruikersrechten naar de oorspronkelijke staat" vertex="1">
+          <mxGeometry height="60" width="120" x="550" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="Obj8d_O0rm5UT-2CFnJ8-37" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Volledige overname van het systeem door een reguliere gebruiker" vertex="1">
+          <mxGeometry height="60" width="120" x="707" y="400" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
