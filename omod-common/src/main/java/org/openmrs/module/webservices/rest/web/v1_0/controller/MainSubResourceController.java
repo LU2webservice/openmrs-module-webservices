@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openmrs.module.webservices.rest.SimpleObject;
+import org.openmrs.module.webservices.rest.web.audit.AuditLog;
 import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.RestUtil;
@@ -165,6 +166,8 @@ public class MainSubResourceController extends BaseRestController {
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
 		res.delete(parentUuid, uuid, reason, context);
+		// R-1: record who deleted what, when and from where so the action cannot be denied
+		AuditLog.success("DELETE", resource + "/" + subResource, uuid, request);
 		return RestUtil.noContent(response);
 	}
 	
@@ -184,6 +187,8 @@ public class MainSubResourceController extends BaseRestController {
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
 		res.purge(parentUuid, uuid, context);
+		// R-1: PURGE permanently removes data; record it so the action cannot be denied
+		AuditLog.success("PURGE", resource + "/" + subResource, uuid, request);
 		return RestUtil.noContent(response);
 	}
 	
@@ -203,6 +208,8 @@ public class MainSubResourceController extends BaseRestController {
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
 		res.delete(parentUuid, null, reason, context);
+		// R-1: record who deleted what, when and from where so the action cannot be denied
+		AuditLog.success("DELETE", resource + "/" + subResource, parentUuid, request);
 		return RestUtil.noContent(response);
 	}
 	
@@ -221,6 +228,8 @@ public class MainSubResourceController extends BaseRestController {
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
 		res.purge(parentUuid, null, context);
+		// R-1: PURGE permanently removes data; record it so the action cannot be denied
+		AuditLog.success("PURGE", resource + "/" + subResource, parentUuid, request);
 		return RestUtil.noContent(response);
 	}
 	
