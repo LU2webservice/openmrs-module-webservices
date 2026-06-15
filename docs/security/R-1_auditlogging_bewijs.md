@@ -7,7 +7,7 @@
 > 3. de **echte output** als bewijs,
 > 4. en waar alles staat, zodat het volledig herleidbaar is.
 >
-> Korte samenvatting vooraf: **14 tests, allemaal groen.** ✅
+> Korte samenvatting vooraf: **14 tests, allemaal groen.**
 
 | | |
 |---|---|
@@ -79,7 +79,7 @@ Ik heb **twee** testbestanden gemaakt. Samen zijn dat **14 tests**.
 
 ### 3.1 `AuditLogTest`: test het log-hulpje zelf (8 tests)
 
-📄 `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/audit/AuditLogTest.java`
+Bestand: `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/audit/AuditLogTest.java`
 
 Deze test vangt de logregels **in het geheugen** op, zodat ik ze direct kan controleren.
 Je hoeft dus geen logbestand met de hand te lezen, en dát maakt het "testbaar".
@@ -97,7 +97,7 @@ Je hoeft dus geen logbestand met de hand te lezen, en dát maakt het "testbaar".
 
 ### 3.2 `MainResourceControllerAuditTest`: test de échte controller (6 tests)
 
-📄 `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/v1_0/controller/MainResourceControllerAuditTest.java`
+Bestand: `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/v1_0/controller/MainResourceControllerAuditTest.java`
 
 Deze test roept de **echte controller** aan (`MainResourceController`) en controleert dat
 die zelf een auditregel schrijft. Zo bewijs ik de koppeling in de productiecode, en niet alleen
@@ -170,7 +170,7 @@ java.lang.AssertionError: expected exactly one audit line expected:<1> but was:<
 **NA de fix** (controller mét logging): dezelfde test **slaagt**.
 
 ```
-Tests run: 13, Failures: 0, Errors: 0
+Tests run: 14, Failures: 0, Errors: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -192,7 +192,7 @@ gerepareerde code. Daarmee bewijst de test dat de logging er écht toe doet.
 
 ---
 
-## 4b. Extra fix: log injectie afgevangen (CodeQL, CWE-117)
+## 4.5 Extra fix: log injectie afgevangen (CodeQL, CWE-117)
 
 Toen ik een pull request opende, gaf de CI-scanner **CodeQL** een waarschuwing op mijn logregel:
 *"This log entry depends on a user-provided value"* (Log Injection, CWE-117).
@@ -222,12 +222,12 @@ of `\r` meer bevat en dus één regel blijft.
 
 | Eis | Voldaan? | Bewijs |
 |---|---|---|
-| Tests voor de logging | ✅ | 2 testbestanden, 14 tests |
-| **Succesvolle** acties getest | ✅ | tests met `outcome=SUCCESS` (DELETE, PURGE, UPDATE, CREATE) |
-| **Mislukte** acties getest | ✅ | `outcome=DENIED` (geen rechten) en `outcome=FAILED` (serverfout) |
-| **Afwezigheid van gevoelige gegevens** | ✅ | 3 tests bewijzen dat een wachtwoord nooit in de regel staat |
-| **Veilig tegen log injectie (CWE-117)** | ✅ | CodeQL-bevinding opgelost, eigen test bewijst het |
-| **Alle tests slagen** | ✅ | `Tests run: 14, Failures: 0, Errors: 0` |
+| Tests voor de logging | Ja | 2 testbestanden, 14 tests |
+| **Succesvolle** acties getest | Ja | tests met `outcome=SUCCESS` (DELETE, PURGE, UPDATE, CREATE) |
+| **Mislukte** acties getest | Ja | `outcome=DENIED` (geen rechten) en `outcome=FAILED` (serverfout) |
+| **Afwezigheid van gevoelige gegevens** | Ja | 3 tests bewijzen dat een wachtwoord nooit in de regel staat |
+| **Veilig tegen log injectie (CWE-117)** | Ja | CodeQL-bevinding opgelost, eigen test bewijst het |
+| **Alle tests slagen** | Ja | `Tests run: 14, Failures: 0, Errors: 0` |
 
 ### Koppeling met NEN-7510 / ISO 27002 beheersmaatregel 8.15 (Logging)
 
