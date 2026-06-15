@@ -218,6 +218,80 @@ of `\r` meer bevat en dus één regel blijft.
 
 ---
 
+## 4.6 Penetration test: risicoverlaging aangetoond
+
+Het securityrisico bij R-1 is **repudiation**: een aanvaller of kwaadwillende interne gebruiker
+verwijdert of wijzigt gegevens en kan dat daarna **ontkennen**, omdat er geen spoor is. In het
+pentestrapport is dit **PT-5** ("Auditlogging na DELETE"), dat eerder op "nader onderzoek nodig"
+stond omdat het auditlog niet te controleren was. Ik heb dat nu controleerbaar gemaakt en de
+risicoverlaging aangetoond.
+
+**Aanvalsscenario 1: een actie ontkennen (repudiation)**
+
+| | |
+|---|---|
+| Aanval | een DELETE op een resource uitvoeren, bijvoorbeeld `DELETE /ws/rest/v1/patient/{uuid}` |
+| Voor | er ontstaat **geen enkele** logregel. De dader kan de verwijdering ontkennen. Risico aanwezig. |
+| Na | er ontstaat een auditregel met `user`, `uuid`, `when` en `ip`. Ontkennen kan niet meer. Risico verlaagd. |
+| Bewijs | de rood/groen-test uit 4.4 (voor: 0 regels en de test faalt, na: regel aanwezig en de test slaagt) |
+
+**Aanvalsscenario 2: het logboek vervalsen (log injection, CWE-117)**
+
+| | |
+|---|---|
+| Aanval | een waarde met een regeleinde meesturen (bijvoorbeeld in de `X-Forwarded-For`-header) om een nepregel als `AUDIT ... user=admin` in het log te schrijven |
+| Voor | de nepregel zou als losse auditregel in het log verschijnen. Risico aanwezig (door CodeQL gevonden). |
+| Na | regeleindes worden verwijderd, de invoer blijft op één regel. Injecteren lukt niet meer. Risico verlaagd. |
+| Bewijs | de test `formatMessage_neutralisesLineBreaksToPreventLogForging` en de CodeQL-melding die nu weg is |
+
+### Live penetration test (curl tegen de draaiende app)
+
+Ik heb de aanval ook **echt uitgevoerd** tegen een draaiende OpenMRS (Docker, met demo-data, op
+`http://localhost:8081`). Ik maakte een wegwerp-locatie aan en viel die daarna aan:
+
+```bash
+PW=<admin-wachtwoord uit .env>
+
+# vooraf: maak een test-locatie aan (geeft een uuid terug)
+curl -u admin:$PW -H "Content-Type: application/json" -X POST \
+  http://localhost:8081/openmrs/ws/rest/v1/location -d '{"name":"PENTEST-LOC"}'
+
+# AANVAL A: verwijderen ZONDER inloggen           -> HTTP 401
+curl -X DELETE http://localhost:8081/openmrs/ws/rest/v1/location/<uuid>
+
+# AANVAL B: verwijderen MET inloggen               -> HTTP 204
+curl -u admin:$PW -X DELETE http://localhost:8081/openmrs/ws/rest/v1/location/<uuid>
+
+# AANVAL C: verwijderen van een niet-bestaande uuid -> HTTP 404
+curl -u admin:$PW -X DELETE http://localhost:8081/openmrs/ws/rest/v1/location/00000000-dead-beef-0000-000000000000
+
+# het bewijs uit de draaiende container:
+docker logs openmrs | grep "AUDIT action="
+```
+
+De **echte auditregels** die hierdoor in de draaiende container ontstonden:
+
+```
+WARN AuditLog.record AUDIT action=DELETE resource=location uuid=04d5b55b-dd17-4e66-8862-f76d1403be7b outcome=DENIED when=2026-06-15T19:56:07Z user=unknown ip=172.20.0.1
+WARN AuditLog.record AUDIT action=DELETE resource=location uuid=00000000-dead-beef-0000-000000000000 outcome=FAILED when=2026-06-15T19:57:43Z user=admin   ip=172.20.0.1
+```
+
+Wat dit op het **draaiende systeem** bewijst:
+
+- De **ongeautoriseerde** verwijderpoging (aanval A) is nu gelogd als `outcome=DENIED`, met
+  `user=unknown` en het **IP van de aanvaller** (`172.20.0.1`). Vroeger liet zo'n poging geen
+  enkel spoor na, precies het R-1 risico.
+- De **mislukte** poging (aanval C) is gelogd als `outcome=FAILED` met gebruiker `admin`.
+
+**Eerlijke kanttekening (logniveau):** geslaagde acties log ik op INFO en geweigerde/mislukte op
+WARN. De OpenMRS-container staat standaard op WARN, dus de security-relevante regels (DENIED en
+FAILED) komen meteen in het log. Om ook de SUCCESS-regels (zoals aanval B) live vast te leggen,
+moet het aparte audit-logger-niveau in productie op INFO worden gezet. De volledige set uitkomsten
+inclusief SUCCESS is sowieso al aangetoond in sectie 4.3. Dit sluit direct aan op PT-5 uit het
+[pentestrapport](Security_Backlog_Pentest_Rapport.md), dat eerder niet controleerbaar was.
+
+---
+
 ## 5. Voldoen we aan de eisen? (controle)
 
 | Eis | Voldaan? | Bewijs |
@@ -268,3 +342,29 @@ Alle andere tests bewijzen de **nieuwe** situatie. Zo zie je het verschil binnen
 | Test 1, log-hulpje | `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/audit/AuditLogTest.java` |
 | Test 2, controller | `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/v1_0/controller/MainResourceControllerAuditTest.java` |
 | Commando om alles te bewijzen | `mvn -o -pl omod-common -am test -Dtest=AuditLogTest,MainResourceControllerAuditTest` |
+
+---
+
+## 8. Verantwoording van de realisatie (inclusief AI-tooling)
+
+**Hoe ik het heb gebouwd**
+
+1. Een log-hulpje `AuditLog` gemaakt dat per actie één regel schrijft met wie/wat/wanneer/IP en de uitkomst.
+2. Dit aangesloten op de echte controllers (`MainResourceController`, `MainSubResourceController`) voor CREATE, UPDATE, DELETE en PURGE.
+3. Tests geschreven voor geslaagde acties, mislukte/geweigerde acties en de afwezigheid van gevoelige data.
+4. De CodeQL-bevinding (log injectie) opgelost en met een test afgedekt.
+
+**Gebruikte tooling**
+
+| Tool | Waarvoor |
+|---|---|
+| AI: Claude Code (Anthropic) | hulp bij het schrijven van de code, de tests en dit document |
+| CodeQL | statische security-scan in de CI, vond de log-injectie |
+| Maven, JUnit, Mockito, log4j2 | bouwen en draaien van de tests |
+| Git | de fix tijdelijk terugdraaien voor het rood/groen-bewijs |
+
+**Hoe ik de AI-tooling heb verantwoord en gecontroleerd**
+
+- Ik heb alle door de AI voorgestelde code zelf nagelezen en aangepast aan de stijl van het project.
+- Ik heb alle tests echt gedraaid en niet aangenomen dat het wel goed zat: 14 tests, allemaal groen.
+- Controle bleek ook echt nodig: de eerste versie van de logregel (mede door de AI opgesteld) bevatte zelf de log-injectie (CWE-117). De CI-scanner CodeQL ving dit, waarna ik het heb opgelost en met een test heb afgedekt. Dit laat zien dat AI-output altijd geverifieerd moet worden voordat je erop bouwt.
