@@ -342,29 +342,3 @@ Alle andere tests bewijzen de **nieuwe** situatie. Zo zie je het verschil binnen
 | Test 1, log-hulpje | `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/audit/AuditLogTest.java` |
 | Test 2, controller | `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/v1_0/controller/MainResourceControllerAuditTest.java` |
 | Commando om alles te bewijzen | `mvn -o -pl omod-common -am test -Dtest=AuditLogTest,MainResourceControllerAuditTest` |
-
----
-
-## 8. Verantwoording van de realisatie (inclusief AI-tooling)
-
-**Hoe ik het heb gebouwd**
-
-1. Een log-hulpje `AuditLog` gemaakt dat per actie één regel schrijft met wie/wat/wanneer/IP en de uitkomst.
-2. Dit aangesloten op de echte controllers (`MainResourceController`, `MainSubResourceController`) voor CREATE, UPDATE, DELETE en PURGE.
-3. Tests geschreven voor geslaagde acties, mislukte/geweigerde acties en de afwezigheid van gevoelige data.
-4. De CodeQL-bevinding (log injectie) opgelost en met een test afgedekt.
-
-**Gebruikte tooling**
-
-| Tool | Waarvoor |
-|---|---|
-| AI: Claude Code (Anthropic) | hulp bij het schrijven van de code, de tests en dit document |
-| CodeQL | statische security-scan in de CI, vond de log-injectie |
-| Maven, JUnit, Mockito, log4j2 | bouwen en draaien van de tests |
-| Git | de fix tijdelijk terugdraaien voor het rood/groen-bewijs |
-
-**Hoe ik de AI-tooling heb verantwoord en gecontroleerd**
-
-- Ik heb alle door de AI voorgestelde code zelf nagelezen en aangepast aan de stijl van het project.
-- Ik heb alle tests echt gedraaid en niet aangenomen dat het wel goed zat: 14 tests, allemaal groen.
-- Controle bleek ook echt nodig: de eerste versie van de logregel (mede door de AI opgesteld) bevatte zelf de log-injectie (CWE-117). De CI-scanner CodeQL ving dit, waarna ik het heb opgelost en met een test heb afgedekt. Dit laat zien dat AI-output altijd geverifieerd moet worden voordat je erop bouwt.
