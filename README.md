@@ -1,33 +1,90 @@
 # OpenMRS REST Webservices Module - Beveiligingsonderzoek
 
-Fork van de OpenMRS REST module. Doel: beveiligingsopties ontdekken, documenteren en oplossen.
+Fork van de OpenMRS REST Webservices module (v3.2.0). Deze module is de REST-API van
+OpenMRS en stelt patiënt- en zorggegevens beschikbaar onder `/ws/rest/v1/...`.
 
-## Eerste keer opzetten
+Doel van dit project: de module analyseren op beveiliging en onderhoudbaarheid, de
+bevindingen onderbouwd documenteren en de belangrijkste risico's aantoonbaar oplossen.
+Omdat het om bijzondere persoonsgegevens gaat (AVG art. 9) toetsen we aan **NEN 7510**.
 
-1. Repo clonen
-2. `example.env` kopiëren naar `.env` en wachtwoorden invullen
-3. `docker compose --env-file .env up -d`
-4. Wacht ~5 minuten, open http://localhost:8080/openmrs
+---
 
-## Module deployen (voor testen)
+## Documentatie (`docs/`)
 
-1. JDK 8 installeren via [adoptium.net](https://adoptium.net)
-2. `build_module.bat` uitvoeren (bouwt de module en kopieert de `.omod` naar `docker/modules/`)
-3. Docker herstarten: `docker compose down` gevolgd door `docker compose --env-file .env up -d`
-4. Wacht even, check http://localhost:8080/openmrs/ws/rest/v1/session
+Alle analyse, tests en onderbouwing staan in de map `docs/`, opgedeeld in twee onderdelen:
 
-## Stoppen
+- **`docs/security/`** - alles rond beveiliging: analyse, risico's, pentest en de oplossingen.
+- **`docs/onderhoudbaarheid/`** - alles rond onderhoudbaarheid: tests, code coverage en verbeteringen.
 
+---
+
+## Project opstarten (Docker)
+
+1. Repo clonen.
+2. `example.env` kopiëren naar `.env` en de wachtwoorden invullen.
+3. Starten:
+   ```bash
+   docker compose --env-file .env up -d
+   ```
+4. Wacht ~5 minuten en open http://localhost:8080/openmrs.
+
+Controleren of de REST-API draait: http://localhost:8080/openmrs/ws/rest/v1/session
+
+Stoppen:
 ```bash
-docker compose down
+docker compose down       # containers stoppen
+docker compose down -v    # ook alle data verwijderen
 ```
 
-Data ook verwijderen:
+---
 
+## Module bouwen en deployen
+
+1. Een JDK installeren (bijv. via [adoptium.net](https://adoptium.net)).
+2. `build_module.bat` uitvoeren - dit bouwt de module en kopieert de `.omod` naar
+   `docker/modules/`.
+3. Docker herstarten zodat de nieuwe module wordt geladen:
+   ```bash
+   docker compose down
+   docker compose --env-file .env up -d
+   ```
+
+---
+
+## Tests draaien
+
+Alle unit- en componenttests (inclusief de 31 auditlogging-tests):
 ```bash
-docker compose down -v
+mvn -o test
 ```
+
+Build met tests én code-coverage-rapport (JaCoCo, gate op 80%):
+```bash
+mvn clean verify
+# rapport: coverage-report/target/site/jacoco-aggregate/index.html
+```
+
+Integratietests (vereisen een draaiende OpenMRS-server):
+```bash
+mvn clean verify -Pintegration-tests -DtestUrl=http://admin:Admin123@localhost:8080/openmrs
+```
+
+Details en resultaten staan in `docs/maintainability/Testresultaten_overzicht.md`.
+
+---
+
+## Projectstructuur
+
+| Module | Inhoud |
+|---|---|
+| `omod-common` | Basis van de REST-laag: framework, filters, hulpklassen en de auditlogging. |
+| `omod` | De REST-resources per OpenMRS-versie (vrijwel alle endpoints en de meeste tests). |
+| `integration-tests` | End-to-end tests tegen een draaiende server. |
+| `coverage-report` | Module die de coverage van `omod-common` en `omod` samenvoegt tot één rapport. |
+
+---
 
 ## Licentie
 
 [MPL-2.0 w/ HD](http://openmrs.org/license/)
+</content>
