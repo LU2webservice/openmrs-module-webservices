@@ -37,19 +37,18 @@ analyse niet - het verwijst ernaar.
 
 ## 2. Gebruikte bronnen (herleidbaarheid)
 
-Elke verbetering hieronder is terug te koppelen naar deze bronnen. Sommige documenten staan
-op een andere branch; die branch staat erbij zodat het document te vinden is.
+Elke verbetering hieronder is terug te koppelen naar deze bronnen.
 
 | Bron | Wat het oplevert | Document |
 |---|---|---|
 | Threat model (STRIDE + C4) | Dreigingen, trust boundaries (TB-1...TB-7), beveiligingsdoelen (BG-1...BG-6) | `threat-model.md` |
-| Risicocriteria en risicoregister | BIV/CIA-schaal, kans x impact-score, risicoklassen, beslisregels | `risk-criteria.md` (branch `docs_risk_criteria_assessment`), `risk-matrix.md`, `risk-evaluation.md` |
-| Risk assessment report | Mitigatie per bevinding, koppeling NEN 7510-2:2024, **kostenraming** | `risk-assessment-report.md` (branch `docs_risk_criteria_assessment`) |
-| BIV/CIA-risicoanalyse | Kroonjuwelen, toegepast risicoregister | `BIV-risicoanalyse.md` (branch `analyze-project`) |
-| Gap-analyses | Huidige versus gewenste situatie, NEN 7510-koppeling | `01-gap-analyse.md`, `Gap-analyse-logging.md` (branch `docs_auditreport_gapanalysis`) |
+| Risicocriteria en risicoregister | BIV/CIA-schaal, kans x impact-score, risicoklassen, beslisregels | `risk-criteria.md`, `risk-matrix.md`, `risk-evaluation.md` |
+| Risk assessment report | Mitigatie per bevinding, koppeling NEN 7510-2:2024, **kostenraming** | `risk-assessment-report.md` |
+| BIV/CIA-risicoanalyse | Kroonjuwelen, toegepast risicoregister | `BIV-risicoanalyse.md` |
+| Gap-analyses | Huidige versus gewenste situatie, NEN 7510-koppeling | `01-gap-analyse.md`, `Gap-analyse-logging.md` |
 | Security backlog + pentestrapport | Geprioriteerde requirements (SR-1...SR-18) met **effort**, en pentestbevindingen (PT-1...PT-15) met **gemeten exploiteerbaarheid** en het oplos/accepteer-besluit | `Security_Backlog_Pentest_Rapport.md` |
 | Testresultaten | Auditlogging-tests (R-1), regressierun | `Testresultaten_overzicht.md`, `R-1_auditlogging_bewijs.md` |
-| CI/CD en coverage | Pipeline-controles (SAST/SCA/SBOM), coverage-gate | `CICD.md`, `CODE_COVERAGE.md` (branch `code_coverage`) |
+| CI/CD en coverage | Pipeline-controles (SAST/SCA/SBOM), coverage-gate | `CICD.md`, `CODE_COVERAGE.md` |
 
 ---
 
@@ -208,7 +207,7 @@ maar concreet.
 | M1 | Zet de aparte **audit-logger op `INFO` in productie** zodat ook geslaagde acties (niet alleen `DENIED`/`FAILED`) live worden vastgelegd | De container staat standaard op `WARN`, dus SUCCESS-regels worden nog niet in productie bewaard (`R-1_auditlogging_bewijs.md` §4.6) | Klein |
 | M2 | Koppel de **integratietests** (`SessionIT`) achter een profiel/stage in de CI | Ze vereisen nu een draaiende server en worden **niet automatisch** gedraaid (`Testresultaten_overzicht.md` §3) | Middel |
 | M3 | Quarantaine / stabiliseer de flaky **`ClearDbCacheController2_0Test`** (Hibernate-cache-timing) | Bevestigd flaky **ook op de originele OpenMRS-code**, los van onze wijziging (`Testresultaten_overzicht.md` §2.2) | Klein |
-| M4 | Verhoog de **coverage-gate** mee als de dekking groeit (property staat al in `pom.xml`) | Huidige gecombineerde dekking **82,8%** (omod **86,6%**) ligt boven de **80%**-gate; verhoog naar 85% als het structureel hoger is (`CODE_COVERAGE.md`, branch `code_coverage`) | Klein |
+| M4 | Verhoog de **coverage-gate** mee als de dekking groeit (property staat al in `pom.xml`) | Huidige gecombineerde dekking **82,8%** (omod **86,6%**) ligt boven de **80%**-gate; verhoog naar 85% als het structureel hoger is (`CODE_COVERAGE.md`) | Klein |
 
 ---
 
@@ -220,7 +219,7 @@ verbetering hoort dezelfde meting opnieuw te draaien om te bewijzen dat het risi
 | Metriek | Huidige gemeten waarde | Bron | Doel na verbetering |
 |---|---|---|---|
 | Geslaagde geautomatiseerde tests | **1.910** gedraaid; onze **31** audit-tests deterministisch groen; 1 bestaande flaky OpenMRS-test | `Testresultaten_overzicht.md` | Geen regressie; flaky test in quarantaine (M3) |
-| Gecombineerde code coverage | **82,8%** (omod 86,6%), gate op 80% | `CODE_COVERAGE.md` (branch `code_coverage`) | >= 80%, verhogen naar 85% (M4) |
+| Gecombineerde code coverage | **82,8%** (omod 86,6%), gate op 80% | `CODE_COVERAGE.md` | >= 80%, verhogen naar 85% (M4) |
 | Kritieke dependency-CVE's | **2 x CVSS 9.8** (Tomcat Jasper, SnakeYAML) + 1 x 7.5 (jackson-yaml, test) | PT-10 / Grype SCA | 0 kritiek na SR-10/SR-12; schone scan na SR-11 |
 | Bevestigd-exploiteerbare bevindingen | **7 open** (I-2/I-4, S-1, D-4, S-2, D-3, I-5, I-6) + dependency-CVE's | Pentest §4 | Naar 0 via P0-P2 |
 | Auditlogging-dekking van state-changing endpoints | **100%** van de REST CRUD-endpoints (top-level + sub-resource controller) | `Testresultaten_overzicht.md` | Behouden; SUCCESS live vastgelegd (M1) |
@@ -246,16 +245,16 @@ verbetering hoort dezelfde meting opnieuw te draaien om te bewijzen dat het risi
 
 ## 10. Referentie-index
 
-| Document | Branch |
-|---|---|
-| `threat-model.md` | deze branch |
-| `Security_Backlog_Pentest_Rapport.md` | deze branch |
-| `R-1_auditlogging_bewijs.md` | deze branch |
-| `Testresultaten_overzicht.md` | deze branch |
-| `risk-matrix.md`, `risk-evaluation.md` | deze branch |
-| `CICD.md` | deze branch |
-| `risk-criteria.md`, `risk-assessment-report.md` | `docs_risk_criteria_assessment` |
-| `01-gap-analyse.md`, `Gap-analyse-logging.md` | `docs_auditreport_gapanalysis` |
-| `BIV-risicoanalyse.md` | `analyze-project` |
-| `CODE_COVERAGE.md` | `code_coverage` |
+| Document |
+|---|
+| `threat-model.md` |
+| `Security_Backlog_Pentest_Rapport.md` |
+| `R-1_auditlogging_bewijs.md` |
+| `Testresultaten_overzicht.md` |
+| `risk-matrix.md`, `risk-evaluation.md` |
+| `CICD.md` |
+| `risk-criteria.md`, `risk-assessment-report.md` |
+| `01-gap-analyse.md`, `Gap-analyse-logging.md` |
+| `BIV-risicoanalyse.md` |
+| `CODE_COVERAGE.md` |
 </content>
