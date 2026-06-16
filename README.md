@@ -1,11 +1,10 @@
 # OpenMRS REST Webservices Module - Beveiligingsonderzoek
 
-Fork van de OpenMRS REST Webservices module (v3.2.0). Deze module is de REST-API van
-OpenMRS en stelt patiënt- en zorggegevens beschikbaar onder `/ws/rest/v1/...`.
-
-Doel van dit project: de module analyseren op beveiliging en onderhoudbaarheid, de
-bevindingen onderbouwd documenteren en de belangrijkste risico's aantoonbaar oplossen.
-Omdat het om bijzondere persoonsgegevens gaat (AVG art. 9) toetsen we aan **NEN 7510**.
+Dit is een schoolopdracht waarin we specifiek kijken naar de **beveiliging** en
+**onderhoudbaarheid** van deze OpenMRS-module (de REST-API die patiënt- en zorggegevens
+beschikbaar maakt onder `/ws/rest/v1/...`). We tonen de problemen aan, lossen ze op en
+proberen waar mogelijk verbeteringen door te voeren. Omdat het om bijzondere
+persoonsgegevens gaat (AVG art. 9) toetsen we aan **NEN 7510**.
 
 ---
 
