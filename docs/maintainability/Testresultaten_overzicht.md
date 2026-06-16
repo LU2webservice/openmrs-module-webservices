@@ -1,12 +1,12 @@
-# Testresultaten overzicht — webservices.rest module
+# Testresultaten overzicht - webservices.rest module
 
 > **Wat is dit bestand?**
 > Eén overzicht van **alle** geautomatiseerde tests in deze module: wat ze doen, of ze zijn
 > gedraaid, en wat het resultaat was. De tests zijn opgesplitst in twee groepen:
 >
-> 1. **Onze eigen nieuwe tests** (audit logging, R-1) — hier ga ik diep op in: wat elke test
+> 1. **Onze eigen nieuwe tests** (audit logging, R-1) - hier ga ik diep op in: wat elke test
 >    precies controleert en met welke echte output.
-> 2. **De bestaande OpenMRS-tests** — deze waren er al voordat wij begonnen. Ik heb ze allemaal
+> 2. **De bestaande OpenMRS-tests** - deze waren er al voordat wij begonnen. Ik heb ze allemaal
 >    gedraaid en laat per categorie zien dat ze slagen, zonder elke losse test te bespreken
 >    (dat zijn er honderden en ze testen standaard OpenMRS-functionaliteit, niet onze wijziging).
 >
@@ -17,7 +17,7 @@
 | **Branch** | `code-tests-logging` |
 | **Datum van deze testrun** | 2026-06-16 |
 | **Commando (alles)** | `mvn -o test` (vanuit de projectroot) |
-| **Resultaat** | **BUILD SUCCESS** — 1896 tests, **0 failures, 0 errors**, 14 skipped |
+| **Resultaat** | 1.910 tests gedraaid; onze 31 audit-tests **0 failures** (deterministisch). 1 bestaande flaky OpenMRS-test los van onze wijziging, zie §2.2 |
 | **Gerelateerd** | [R-1_auditlogging_bewijs.md](../security/R-1_auditlogging_bewijs.md) (de uitgebreide pentest/bewijsvoering voor R-1), [Security_Backlog_Pentest_Rapport.md](../security/Security_Backlog_Pentest_Rapport.md) |
 
 ---
@@ -26,11 +26,27 @@
 
 | | Testklassen | Tests | Resultaat |
 |---|:---:|:---:|---|
-| **Onze nieuwe tests** (audit logging) | 3 | **31** | ✅ alle 31 groen (deterministisch) |
-| **Bestaande OpenMRS-tests** (`omod-common`) | 11 | 96 | ✅ alle 96 groen |
-| **Bestaande OpenMRS-tests** (`omod`) | 172 | 1.783 | ✅ groen, m.u.v. 1 bestaande **flaky** OpenMRS-test (`ClearDbCacheController2_0Test`, zie §2.2) |
-| **Integration-tests** (`integration-tests`) | 1 | 2 | ⚠️ niet automatisch gedraaid, vereist een draaiende server (zie §3) |
-| **Totaal automatisch gedraaid** | 186 | **1.910** | ✅ onze module 100% groen; 1 pre-existing flaky OpenMRS-test los van onze wijziging |
+| **Onze nieuwe tests** (audit logging) | 3 | **31** | alle 31 groen (deterministisch) |
+| **Bestaande OpenMRS-tests** (`omod-common`) | 11 | 96 | alle 96 groen |
+| **Bestaande OpenMRS-tests** (`omod`) | 172 | 1.783 | groen, m.u.v. 1 bestaande **flaky** OpenMRS-test (`ClearDbCacheController2_0Test`, zie §2.2) |
+| **Integration-tests** (`integration-tests`) | 1 | 2 | niet automatisch gedraaid, vereist een draaiende server (zie §3) |
+| **Totaal automatisch gedraaid** | 186 | **1.910** | onze module 100% groen; 1 pre-existing flaky OpenMRS-test los van onze wijziging |
+
+> **In één zin:** standaard draait deze module **1.879 bestaande tests van OpenMRS zelf**; daar
+> hebben wíj **31 tests** aan toegevoegd die specifiek de **audit-logging** controleren. Samen
+> **1.910** tests, waarvan onze 31 deterministisch groen zijn.
+
+### Wat voor soort tests zijn onze 31?
+
+| Soort | Aantal | Welke | Hoe het draait |
+|---|:---:|---|---|
+| **Pure unit test** | 8 | `AuditLogTest` | geen Spring, geen database - roept het log-hulpje `AuditLog` rechtstreeks aan en vangt de logregel in het geheugen op. Millisecondensnel en altijd stabiel. |
+| **Component-/controllertest** | 23 | `MainResourceControllerAuditTest` (9), `MainSubResourceControllerAuditTest` (14) | draait in een echte OpenMRS-context (daarom is de gebruiker `admin`), maar met **gemockte** resources, zodat puur de controller-logica + de logging-koppeling wordt getest, zonder echte database-writes. |
+
+Het zijn dus **geen** end-to-end/integration-tests tegen een draaiende server (die staan apart, zie
+§3) en geen UI-tests. Het is de gangbare OpenMRS-teststijl: een snelle unit-test voor de losse
+logica, plus context-sensitieve tests die bewijzen dat de productiecode (de controllers) de logging
+ook echt aanroept.
 
 Het doel was: **alle state-changing endpoints van de REST-laag loggen én testen**, en de logging
 duidelijk terug kunnen zien. De generieke REST-laag heeft twee controllers die samen álle
@@ -39,13 +55,13 @@ CRUD-endpoints afhandelen:
 | Controller | Endpoints | Audit-test |
 |---|---|---|
 | `MainResourceController` | top-level resources, bv. `POST/DELETE /patient/{uuid}` | `MainResourceControllerAuditTest` (9 tests) |
-| `MainSubResourceController` | sub-resources, bv. `POST/DELETE /patient/{uuid}/identifier/{uuid}` | `MainSubResourceControllerAuditTest` (14 tests) — **nieuw** |
+| `MainSubResourceController` | sub-resources, bv. `POST/DELETE /patient/{uuid}/identifier/{uuid}` | `MainSubResourceControllerAuditTest` (14 tests) - **nieuw** |
 
 Daarnaast test `AuditLogTest` (8 tests) het log-hulpje zelf. Samen **31 tests**. In dit traject heb
 ik toegevoegd:
 - **3 tests** aan `MainResourceControllerAuditTest` (CREATE/UPDATE/PURGE in het geweigerde/mislukte
-  pad — dat was alleen voor DELETE getest), en
-- de volledige nieuwe klasse `MainSubResourceControllerAuditTest` (**14 tests**) — én de bijbehorende
+  pad - dat was alleen voor DELETE getest), en
+- de volledige nieuwe klasse `MainSubResourceControllerAuditTest` (**14 tests**) - én de bijbehorende
   **fix** in de sub-resource controller, want die logde `create`/`update`/`put` nog helemaal niet en
   had geen failure-afhandeling (zie §1.6).
 
@@ -72,7 +88,7 @@ Er zijn drie testbestanden:
 | `MainResourceControllerAuditTest.java` | de échte top-level controller (`MainResourceController`) | 9 |
 | `MainSubResourceControllerAuditTest.java` | de échte sub-resource controller (`MainSubResourceController`) | 14 |
 
-### 1.2 `AuditLogTest` — het log-hulpje (8 tests)
+### 1.2 `AuditLogTest` - het log-hulpje (8 tests)
 
 Bestand: `omod-common/src/test/java/.../web/audit/AuditLogTest.java`
 
@@ -82,7 +98,7 @@ hand te moeten lezen.
 
 | Test | Wat het controleert |
 |---|---|
-| `noRecordCall_leavesNoAuditTrail` | zonder log-aanroep zijn er **0** regels — dit legt de oude, kwetsbare situatie vast |
+| `noRecordCall_leavesNoAuditTrail` | zonder log-aanroep zijn er **0** regels - dit legt de oude, kwetsbare situatie vast |
 | `success_leavesAuditTrailWithWhoWhatWhenWhere` | een geslaagde actie geeft 1 regel met `action`, `resource`, `uuid`, `outcome=SUCCESS`, `when` en `ip` |
 | `denied_leavesAuditTrailWithDeniedOutcome` | een geweigerde actie geeft `outcome=DENIED` |
 | `failure_leavesAuditTrailWithFailedOutcome` | een andere mislukking geeft `outcome=FAILED` |
@@ -91,7 +107,7 @@ hand te moeten lezen.
 | `record_usesXForwardedForWhenPresent` | achter een proxy wordt het echte client-IP gelogd (uit `X-Forwarded-For`) |
 | `formatMessage_producesAllFieldsInOrder` | de regel klopt **exact**, karakter voor karakter, in vaste volgorde |
 
-### 1.3 `MainResourceControllerAuditTest` — de echte controller (9 tests)
+### 1.3 `MainResourceControllerAuditTest` - de echte controller (9 tests)
 
 Bestand: `omod-common/src/test/java/.../web/v1_0/controller/MainResourceControllerAuditTest.java`
 
@@ -102,7 +118,7 @@ state-changing actie (CREATE/UPDATE/DELETE/PURGE), in zowel het **succes**- als 
 
 De eerste 6 tests bestonden al; de laatste 3 (cursief het verschil) heb ik zelf toegevoegd, omdat
 de bestaande set wel DELETE-denied en DELETE-failed testte, maar niet CREATE/UPDATE/PURGE in het
-geweigerde of mislukte pad — terwijl de controller dezelfde `auditFailure(...)`-hulpmethode voor
+geweigerde of mislukte pad - terwijl de controller dezelfde `auditFailure(...)`-hulpmethode voor
 alle vier de acties gebruikt (zie `MainResourceController.java:212-218`). Zonder deze tests was
 die gedeelde logica voor 3 van de 4 acties dus ongetest.
 
@@ -119,17 +135,17 @@ die gedeelde logica voor 3 van de 4 acties dus ongetest.
 | `purge_whenServerError_writesFailedAuditEntryAndRethrows` | PURGE met een serverfout (bv. DB-constraint) | `action=PURGE ... outcome=FAILED` | **nieuw** |
 
 Alle "denied/failed"-tests controleren ook dat de oorspronkelijke exception gewoon wordt
-doorgegooid naar de normale foutafhandeling — loggen verandert dus niets aan het gedrag van de
+doorgegooid naar de normale foutafhandeling - loggen verandert dus niets aan het gedrag van de
 API, het voegt alleen het spoor toe.
 
-### 1.4 `MainSubResourceControllerAuditTest` — de sub-resource controller (14 tests)
+### 1.4 `MainSubResourceControllerAuditTest` - de sub-resource controller (14 tests)
 
 Bestand: `omod-common/src/test/java/.../web/v1_0/controller/MainSubResourceControllerAuditTest.java`
 
 Sub-resources zijn een **aparte set endpoints**, afgehandeld door een andere controller
 (`MainSubResourceController`). Voorbeeld: `POST /patient/{uuid}/identifier` voegt een identifier toe
 aan een patiënt, `DELETE /patient/{uuid}/identifier/{uuid}` verwijdert die weer. Deze test bewijst
-dat ook die endpoints loggen — voor élke actie, in zowel het succes- als het denied/failed-pad.
+dat ook die endpoints loggen - voor élke actie, in zowel het succes- als het denied/failed-pad.
 
 Voor dit traject logde deze controller `create`/`update`/`put` **niet** en had hij geen
 failure-afhandeling; die fix staat in §1.6. De 14 tests dekken alle 7 state-changing endpoints:
@@ -165,7 +181,7 @@ mvn -o -pl omod-common -am test -Dtest=AuditLogTest,MainResourceControllerAuditT
 [INFO] BUILD SUCCESS
 ```
 
-### 1.5.1 Echte auditregels — top-level controller (9 tests)
+### 1.5.1 Echte auditregels - top-level controller (9 tests)
 
 Dit zijn de **echte regels** die de 9 `MainResourceController`-tests vandaag hebben weggeschreven
 (opgevangen door de in-memory appender en geprint als bewijs):
@@ -182,7 +198,7 @@ AUDIT action=CREATE resource=user    uuid=unknown            outcome=SUCCESS whe
 AUDIT action=CREATE resource=patient uuid=unknown            outcome=DENIED  when=2026-06-16T10:34:21.951Z user=admin ip=192.168.1.50
 ```
 
-### 1.5.2 Echte auditregels — sub-resource controller (14 tests)
+### 1.5.2 Echte auditregels - sub-resource controller (14 tests)
 
 En dit zijn de **echte regels** van de nieuwe `MainSubResourceController`-tests. Let op
 `resource=patient/identifier` en `resource=user/credential`: de sub-resource staat netjes als
@@ -207,7 +223,7 @@ AUDIT action=PUT    resource=patient/identifier uuid=parent-uuid outcome=FAILED 
 ```
 
 Let op de regels met `resource=user/credential` (CREATE en UPDATE): in die tests stond een **echt
-wachtwoord** in de request body (`S3cr3t-Passw0rd!`). Het wachtwoord staat nergens in de regel —
+wachtwoord** in de request body (`S3cr3t-Passw0rd!`). Het wachtwoord staat nergens in de regel -
 precies de eis uit de gap-analyse. Hetzelfde geldt voor de twee `resource=user`-regels bij de
 top-level controller in §1.5.1.
 
@@ -237,22 +253,23 @@ consistent en zijn **alle** CRUD-endpoints van de generieke REST-laag gedekt.
 > WARN AuditLog.record AUDIT action=CREATE resource=conceptdatatype uuid=unknown outcome=FAILED when=... user=admin ip=127.0.0.1
 > ```
 > Dit is extra bewijs dat de auditlogging **transparant** meedraait met de rest van de module: de
-> bestaande testsuite (1.783 tests) blijft voor 100% slagen mét de logging aan — óók ná de fix aan
-> de sub-resource controller (§1.6) — en de logging wordt ook door heel andere resources (provider,
+> bestaande testsuite (1.783 tests) blijft voor 100% slagen mét de logging aan - óók ná de fix aan
+> de sub-resource controller (§1.6) - en de logging wordt ook door heel andere resources (provider,
 > conceptdatatype, ...) dan de eigen tests automatisch gebruikt, omdat hij in de gedeelde
 > controllers zit.
 
 ---
 
-## 2. Bestaande OpenMRS-tests
+## 2. Bestaande OpenMRS-tests (1.879 stuks)
 
-Dit zijn de tests die al in de module zaten vóórdat wij ermee aan de slag gingen. Ze testen
-**standaard OpenMRS REST-functionaliteit** (CRUD op patiënten, concepten, encounters, gebruikers,
-enzovoort) voor de verschillende ondersteunde OpenMRS-versies (1.8 t/m 2.8). Dit is niet ons werk
-en ik ga er daarom niet per test op in — ik laat per categorie zien dat **alles draait en
-slaagt**, zodat aangetoond is dat onze wijziging niets heeft stukgemaakt.
+Dit zijn de **1.879 tests die standaard van OpenMRS zelf** komen - ze zaten al in de module vóórdat
+wij ermee aan de slag gingen (96 in `omod-common` + 1.783 in `omod`). Ze testen **standaard OpenMRS
+REST-functionaliteit** (CRUD op patiënten, concepten, encounters, gebruikers, enzovoort) voor de
+verschillende ondersteunde OpenMRS-versies (1.8 t/m 2.8). Dit is niet ons werk en ik ga er daarom
+niet per test op in - ik laat per categorie zien dat **alles draait en slaagt**, zodat aangetoond is
+dat onze wijziging niets heeft stukgemaakt.
 
-### 2.1 Module `omod-common` (generieke REST-laag) — 96 tests, 11 klassen
+### 2.1 Module `omod-common` (generieke REST-laag) - 96 tests, 11 klassen
 
 | Testklasse | Wat het (kort) test |
 |---|---|
@@ -261,16 +278,16 @@ slaagt**, zodat aangetoond is dat onze wijziging niets heeft stukgemaakt.
 | `RestUtilComponentTest` (2) | hulpfuncties van de REST-laag |
 | `RestUtilTest` (15) | idem, o.a. response-helpers en exceptie-afhandeling |
 | `RestServiceTest` (4) | resource-registratie en -lookup |
-| `ContentTypeFilterTest` (6) | blokkeert XML content-types, staat JSON/multipart toe — zie §2.3 |
+| `ContentTypeFilterTest` (6) | blokkeert XML content-types, staat JSON/multipart toe - zie §2.3 |
 | `SearchConfigTest` (22) | configuratie van zoek-handlers |
 | `SearchQueryTest` (17) | opbouw en validatie van zoekqueries |
 | `AlreadyPagedTest` (3) | paginering van resultaten |
 | `MetadataDelegatingCrudResourceTest` (3) | generieke CRUD-resource voor metadata |
 | `NeedsPagingTest` (3) | paginering-interface |
 
-**Resultaat:** `Tests run: 96, Failures: 0, Errors: 0, Skipped: 0` — ✅ alle groen.
+**Resultaat:** `Tests run: 96, Failures: 0, Errors: 0, Skipped: 0` - alle groen.
 
-### 2.2 Module `omod` (resources per OpenMRS-versie) — 1.783 tests, 172 klassen
+### 2.2 Module `omod` (resources per OpenMRS-versie) - 1.783 tests, 172 klassen
 
 Dit zijn vooral **controller-, resource- en search-handler-tests**: voor elke OpenMRS-resource
 (patiënt, concept, encounter, order, visit, gebruiker, ...) en voor elke OpenMRS-versie waarin
@@ -280,33 +297,33 @@ zo'n grote, repetitieve set is, splits ik 'm hier alleen per OpenMRS-versie uit:
 
 | OpenMRS-versie pakket | Testklassen | Tests | Resultaat |
 |---|:---:|:---:|---|
-| `openmrs1_8.*` | 52 | 334 | ✅ |
-| `openmrs1_9.*` | 78 | 674 | ✅ |
-| `openmrs1_10.*` | 20 | 133 | ✅ |
-| `openmrs1_11.*` | 10 | 46 | ✅ |
-| `openmrs1_12.*` | 8 | 43 | ✅ |
-| `openmrs2_0.*` | 45 | 237 | ✅ |
-| `openmrs2_1.*` | 8 | 37 | ✅ |
-| `openmrs2_2.*` | 15 | 92 | ✅ |
-| `openmrs2_3.*` | 3 | 20 | ✅ |
-| `openmrs2_4.*` | 4 | 20 | ✅ |
-| `openmrs2_5.*` | 3 | 19 | ✅ |
-| `openmrs2_7.*` | 4 | 8 | ✅ |
-| `openmrs2_8.*` | 3 | 16 | ✅ |
-| Overig (generieke controller-basis, reflectie-utils, Swagger-generatie, validatie) | ~12 | ~104 | ✅ |
+| `openmrs1_8.*` | 52 | 334 | OK |
+| `openmrs1_9.*` | 78 | 674 | OK |
+| `openmrs1_10.*` | 20 | 133 | OK |
+| `openmrs1_11.*` | 10 | 46 | OK |
+| `openmrs1_12.*` | 8 | 43 | OK |
+| `openmrs2_0.*` | 45 | 237 | OK |
+| `openmrs2_1.*` | 8 | 37 | OK |
+| `openmrs2_2.*` | 15 | 92 | OK |
+| `openmrs2_3.*` | 3 | 20 | OK |
+| `openmrs2_4.*` | 4 | 20 | OK |
+| `openmrs2_5.*` | 3 | 19 | OK |
+| `openmrs2_7.*` | 4 | 8 | OK |
+| `openmrs2_8.*` | 3 | 16 | OK |
+| Overig (generieke controller-basis, reflectie-utils, Swagger-generatie, validatie) | ~12 | ~104 | OK |
 
-**Resultaat:** `Tests run: 1783, Failures: 0, Errors: 0, Skipped: 14` (run van vandaag) — 14 tests
+**Resultaat:** `Tests run: 1783, Failures: 0, Errors: 0, Skipped: 14` (run van vandaag) - 14 tests
 bewust overgeslagen door de tests zelf (bv. een conditionele `assumeTrue`/`@Disabled` voor een
 specifieke OpenMRS-deelversie).
 
-> **Eerlijke kanttekening — één bestaande, instabiele (flaky) OpenMRS-test.**
+> **Eerlijke kanttekening - één bestaande, instabiele (flaky) OpenMRS-test.**
 > `ClearDbCacheController2_0Test` (in `openmrs2_0.*`) test de Hibernate second-level cache
 > (Infinispan). Die cache vult zich **asynchroon**, en de test controleert vóór de eigenlijke actie
 > of een entity al in de cache zit (`containsEntity(...)`). Door timing klopt dat niet altijd,
-> waardoor de test **soms** faalt en soms slaagt — onafhankelijk van onze wijziging. Ik heb dit
+> waardoor de test **soms** faalt en soms slaagt - onafhankelijk van onze wijziging. Ik heb dit
 > expliciet nagegaan:
 > - in de ene volledige run slaagde hij, in een herhaalde run faalde hij (3 van 4);
-> - geïsoleerd gedraaid faalde hij met een ánder aantal (1 van 4) — non-determinisme;
+> - geïsoleerd gedraaid faalde hij met een ánder aantal (1 van 4) - non-determinisme;
 > - ik heb onze codewijziging tijdelijk teruggedraaid (`git stash`) en de test op de **originele**
 >   OpenMRS-code gedraaid: die faalt **net zo goed**.
 >
@@ -323,14 +340,14 @@ volledigheid, en om eerlijk te zijn over wat ze wél en niet aantonen:
 
 | Backlog-item | Testklasse | Wat de test al aantoont | Wat de test **niet** test |
 |---|---|---|---|
-| PT-8/SR-8 (XML content-type bypass, E-2) | `ContentTypeFilterTest` | blokkeert alle XML-content-type-varianten, staat JSON/multipart toe — dit is precies de fix die PT-8 "niet exploiteerbaar" maakte | — (dit punt is dus al gedekt) |
-| PT-12/SR-15 (brute-force wachtwoordreset, D-3) | `PasswordResetController2_2Test` | dat het reset-mechanisme zelf (activatiesleutel aanmaken/valideren) correct werkt | rate-limiting/lockout — die bestaat nog niet in de code, dus kan ook niet getest worden (open backlog-item) |
-| D-4/SR-17 (`/cleardbcache` zonder `@Authorized`) | `ClearDbCacheController2_0Test` | dat de cache-eviction-logica zelf correct werkt | autorisatie — de controller heeft nog geen `@Authorized`-annotatie (zie `ClearDbCacheController2_0.java:36-50`), dat is dus nog steeds open |
+| PT-8/SR-8 (XML content-type bypass, E-2) | `ContentTypeFilterTest` | blokkeert alle XML-content-type-varianten, staat JSON/multipart toe - dit is precies de fix die PT-8 "niet exploiteerbaar" maakte | - (dit punt is dus al gedekt) |
+| PT-12/SR-15 (brute-force wachtwoordreset, D-3) | `PasswordResetController2_2Test` | dat het reset-mechanisme zelf (activatiesleutel aanmaken/valideren) correct werkt | rate-limiting/lockout - die bestaat nog niet in de code, dus kan ook niet getest worden (open backlog-item) |
+| D-4/SR-17 (`/cleardbcache` zonder `@Authorized`) | `ClearDbCacheController2_0Test` | dat de cache-eviction-logica zelf correct werkt | autorisatie - de controller heeft nog geen `@Authorized`-annotatie (zie `ClearDbCacheController2_0.java:36-50`), dat is dus nog steeds open |
 | PT-13/SR-16 (`/session/diag` infolek, I-5) | `SessionController1_9Test` | sessiegedrag (login/logout, locale, locatie, provider) | het specifieke `/session/diag`-endpoint en het ontbreken van authenticatie daarop |
-| R-1 (auditlogging) | `MainResourceControllerAuditTest`, `AuditLogTest` | zie hoofdstuk 1 — dit *is* de fix | — |
+| R-1 (auditlogging) | `MainResourceControllerAuditTest`, `AuditLogTest` | zie hoofdstuk 1 - dit *is* de fix | - |
 
 Deze tabel laat zien dat het oplossen van een backlog-item (zoals SR-17) ook een **nieuwe of
-uitgebreide test** nodig heeft — het simpelweg bestaan van een testklasse met die naam betekent
+uitgebreide test** nodig heeft - het simpelweg bestaan van een testklasse met die naam betekent
 niet automatisch dat de kwetsbaarheid is afgedekt. Voor R-1 is dat traject in dit document
 (hoofdstuk 1) en in [R-1_auditlogging_bewijs.md](../security/R-1_auditlogging_bewijs.md) volledig doorlopen.
 
@@ -341,7 +358,7 @@ niet automatisch dat de kwetsbaarheid is afgedekt. Voor R-1 is dat traject in di
 Module `integration-tests` bevat **end-to-end tests** die tegen een **echt draaiende** OpenMRS-
 server praten (via HTTP, met `rest-assured`). Dat is een ander soort test dan de rest van dit
 document: geen Spring-mock, maar een echte server nodig. Daarom draaien ze niet mee met
-`mvn test` — ze hebben hun eigen Maven-profiel en starten pas bij `mvn verify`:
+`mvn test` - ze hebben hun eigen Maven-profiel en starten pas bij `mvn verify`:
 
 | Bestand | Tests | Wat het test |
 |---|:---:|---|
@@ -376,14 +393,14 @@ mvn -o test
 
 > (*) De `omod`-module is groen op één na: de bestaande flaky OpenMRS-test
 > `ClearDbCacheController2_0Test` (Hibernate-cache timing) faalt intermitterend, **ook op de
-> originele code zonder onze wijziging** — zie de eerlijke kanttekening in §2.2. Onze eigen module
+> originele code zonder onze wijziging** - zie de eerlijke kanttekening in §2.2. Onze eigen module
 > `omod-common` slaagt 100% deterministisch.
 
 | | Tests | Resultaat |
 |---|:---:|---|
-| **Onze 31 audit-tests** | 31 | ✅ 0 failures, deterministisch |
-| **`omod-common` totaal** (incl. onze tests) | 127 | ✅ 0 failures |
-| **`omod`** (bestaande OpenMRS-tests) | 1.783 | ✅ groen, behalve `ClearDbCacheController2_0Test` (pre-existing flaky, §2.2) |
+| **Onze 31 audit-tests** | 31 | 0 failures, deterministisch |
+| **`omod-common` totaal** (incl. onze tests) | 127 | 0 failures |
+| **`omod`** (bestaande OpenMRS-tests) | 1.783 | groen, behalve `ClearDbCacheController2_0Test` (pre-existing flaky, §2.2) |
 
 ---
 
