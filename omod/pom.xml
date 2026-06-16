@@ -30,10 +30,12 @@
 		</dependency>
 
 		<!-- Add jackson-dataformat-yaml with test scope to support tests without bundling -->
+		<!-- SR-11 / DEP-3: uitgelijnd op ${jacksonVersion} (2.19.1) i.p.v. 2.13.3; verhelpt
+		     CVE-2022-42003/42004 en houdt de jackson-versies consistent. -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>2.13.3</version>
+			<version>${jacksonVersion}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

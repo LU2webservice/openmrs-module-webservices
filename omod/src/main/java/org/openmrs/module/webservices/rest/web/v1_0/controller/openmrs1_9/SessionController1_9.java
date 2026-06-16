@@ -13,6 +13,7 @@ import org.apache.commons.lang3.LocaleUtils;
 import org.openmrs.Location;
 import org.openmrs.Provider;
 import org.openmrs.User;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.SimpleObject;
@@ -170,14 +171,18 @@ public class SessionController1_9 extends BaseRestController {
 	@RequestMapping(value = "/diag", method = RequestMethod.GET)
 	@ResponseBody
 	public Object getDiagnostics(@org.springframework.web.bind.annotation.RequestParam(value = "token", required = false) String token) {
+		// SR-16 / I-5: dit endpoint lekte recon-info (serverTime) aan anonieme aanroepers en
+		// negeerde zijn eigen token-parameter (schijnbeveiliging). Nu alleen voor ingelogde
+		// gebruikers; APIAuthenticationException mapt in de REST-laag naar HTTP 403.
+		if (!Context.isAuthenticated()) {
+			throw new APIAuthenticationException("Authentication is required to access diagnostics");
+		}
 		SimpleObject diag = new SimpleObject();
 		diag.add("authenticated", Context.isAuthenticated());
 		diag.add("serverTime", System.currentTimeMillis());
-		if (Context.isAuthenticated()) {
-			diag.add("currentUser", Context.getAuthenticatedUser().getUsername());
-			diag.add("userRoles", Context.getAuthenticatedUser().getRoles());
-			diag.add("userPrivileges", Context.getAuthenticatedUser().getPrivileges());
-		}
+		diag.add("currentUser", Context.getAuthenticatedUser().getUsername());
+		diag.add("userRoles", Context.getAuthenticatedUser().getRoles());
+		diag.add("userPrivileges", Context.getAuthenticatedUser().getPrivileges());
 		return diag;
 	}
 }
