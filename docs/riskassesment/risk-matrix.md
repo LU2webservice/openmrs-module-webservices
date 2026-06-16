@@ -23,6 +23,10 @@ Dit is de risk matrix (kans x impact) om een beeld te krijgen van de risisco's d
 
 ---
 
+| <span style="color: #74C365">Prima</span> | <span style="color: #FFFF00">Acceptabel</span> | <span style="color: #FEBE10">Hoog</span>                 | <span style="color: #FF0000">Niet aanvaardbaar</span> |
+| :---------------------------------------- | :--------------------------------------------- | :------------------------------------------------------- | :---------------------------------------------------- |
+| Voor dit risico nemen we geen maatregelen | Eventueel als last resort maatregelen nemen    | Maatregelen moeten genomen worden om risico te reduceren | Direct maatregelen treffen                            |
+
 <br />
 
 ![image info](./images/riskmatrix.png)
