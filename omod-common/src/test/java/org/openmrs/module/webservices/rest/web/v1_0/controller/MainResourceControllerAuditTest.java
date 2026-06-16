@@ -179,6 +179,77 @@ public class MainResourceControllerAuditTest extends BaseModuleWebContextSensiti
 		assertTrue(line, line.contains("outcome=FAILED"));
 	}
 
+	/**
+	 * The same {@code auditFailure} wiring used by {@code delete} is shared by create/update/purge.
+	 * This proves CREATE is covered too, not just DELETE.
+	 */
+	@Test
+	public void create_whenNotAuthorised_writesDeniedAuditEntryAndRethrows() throws Exception {
+		Creatable resource = mock(Creatable.class);
+		when(restService.getResourceByName(anyString())).thenReturn(resource);
+		doThrow(new APIAuthenticationException("not allowed")).when(resource).create(any(SimpleObject.class), any());
+
+		try {
+			controller.create("patient", new SimpleObject(), request, response);
+			fail("the controller must rethrow the original exception");
+		}
+		catch (APIAuthenticationException expected) {
+			// expected: the exception still bubbles up to the normal error handler
+		}
+
+		String line = onlyAuditLine();
+		assertTrue(line, line.contains("action=CREATE"));
+		assertTrue(line, line.contains("outcome=DENIED"));
+	}
+
+	/**
+	 * Same wiring, exercised for UPDATE: an authorisation failure during update must be logged as
+	 * DENIED, not as a generic FAILED.
+	 */
+	@Test
+	public void update_whenNotAuthorised_writesDeniedAuditEntryAndRethrows() throws Exception {
+		Updatable resource = mock(Updatable.class);
+		when(restService.getResourceByName(anyString())).thenReturn(resource);
+		doThrow(new APIAuthenticationException("not allowed")).when(resource)
+		        .update(anyString(), any(SimpleObject.class), any());
+
+		try {
+			controller.update("user", "uuid-update-denied", new SimpleObject(), request, response);
+			fail("the controller must rethrow the original exception");
+		}
+		catch (APIAuthenticationException expected) {
+			// expected
+		}
+
+		String line = onlyAuditLine();
+		assertTrue(line, line.contains("action=UPDATE"));
+		assertTrue(line, line.contains("uuid=uuid-update-denied"));
+		assertTrue(line, line.contains("outcome=DENIED"));
+	}
+
+	/**
+	 * Same wiring, exercised for PURGE: a non-authorisation failure (e.g. the object cannot be
+	 * permanently removed because of a DB constraint) must be logged as FAILED, not DENIED.
+	 */
+	@Test
+	public void purge_whenServerError_writesFailedAuditEntryAndRethrows() throws Exception {
+		Purgeable resource = mock(Purgeable.class);
+		when(restService.getResourceByName(anyString())).thenReturn(resource);
+		doThrow(new IllegalStateException("constraint violation")).when(resource).purge(anyString(), any());
+
+		try {
+			controller.purge("location", "uuid-purge-error", request, response);
+			fail("the controller must rethrow the original exception");
+		}
+		catch (IllegalStateException expected) {
+			// expected
+		}
+
+		String line = onlyAuditLine();
+		assertTrue(line, line.contains("action=PURGE"));
+		assertTrue(line, line.contains("outcome=FAILED"));
+	}
+
 	// --------------------------------------------------------------------- //
 	// Sensitive data
 	// --------------------------------------------------------------------- //
