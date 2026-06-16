@@ -12,6 +12,7 @@ package org.openmrs.module.webservices.rest.web.v1_0.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.audit.AuditLog;
 import org.openmrs.module.webservices.rest.web.RequestContext;
@@ -123,7 +124,16 @@ public class MainSubResourceController extends BaseRestController {
 		baseUriSetup.setup(request);
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
-		Object created = res.create(parentUuid, post, context);
+		Object created;
+		try {
+			created = res.create(parentUuid, post, context);
+		}
+		catch (RuntimeException e) {
+			// only metadata is logged, never the posted body, so secrets cannot leak
+			auditFailure("CREATE", resource + "/" + subResource, parentUuid, request, e);
+			throw e;
+		}
+		AuditLog.success("CREATE", resource + "/" + subResource, parentUuid, request);
 		return RestUtil.created(response, created);
 	}
 	
@@ -145,7 +155,16 @@ public class MainSubResourceController extends BaseRestController {
 		baseUriSetup.setup(request);
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
-		Object updated = res.update(parentUuid, uuid, post, context);
+		Object updated;
+		try {
+			updated = res.update(parentUuid, uuid, post, context);
+		}
+		catch (RuntimeException e) {
+			// only the uuid is logged, never the posted body, so secrets (e.g. passwords) cannot leak
+			auditFailure("UPDATE", resource + "/" + subResource, uuid, request, e);
+			throw e;
+		}
+		AuditLog.success("UPDATE", resource + "/" + subResource, uuid, request);
 		return RestUtil.updated(response, updated);
 	}
 	
@@ -165,7 +184,13 @@ public class MainSubResourceController extends BaseRestController {
 		baseUriSetup.setup(request);
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
-		res.delete(parentUuid, uuid, reason, context);
+		try {
+			res.delete(parentUuid, uuid, reason, context);
+		}
+		catch (RuntimeException e) {
+			auditFailure("DELETE", resource + "/" + subResource, uuid, request, e);
+			throw e;
+		}
 		// R-1: record who deleted what, when and from where so the action cannot be denied
 		AuditLog.success("DELETE", resource + "/" + subResource, uuid, request);
 		return RestUtil.noContent(response);
@@ -186,7 +211,13 @@ public class MainSubResourceController extends BaseRestController {
 		baseUriSetup.setup(request);
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
-		res.purge(parentUuid, uuid, context);
+		try {
+			res.purge(parentUuid, uuid, context);
+		}
+		catch (RuntimeException e) {
+			auditFailure("PURGE", resource + "/" + subResource, uuid, request, e);
+			throw e;
+		}
 		// R-1: PURGE permanently removes data; record it so the action cannot be denied
 		AuditLog.success("PURGE", resource + "/" + subResource, uuid, request);
 		return RestUtil.noContent(response);
@@ -207,7 +238,13 @@ public class MainSubResourceController extends BaseRestController {
 		baseUriSetup.setup(request);
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
-		res.delete(parentUuid, null, reason, context);
+		try {
+			res.delete(parentUuid, null, reason, context);
+		}
+		catch (RuntimeException e) {
+			auditFailure("DELETE", resource + "/" + subResource, parentUuid, request, e);
+			throw e;
+		}
 		// R-1: record who deleted what, when and from where so the action cannot be denied
 		AuditLog.success("DELETE", resource + "/" + subResource, parentUuid, request);
 		return RestUtil.noContent(response);
@@ -227,7 +264,13 @@ public class MainSubResourceController extends BaseRestController {
 		baseUriSetup.setup(request);
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
-		res.purge(parentUuid, null, context);
+		try {
+			res.purge(parentUuid, null, context);
+		}
+		catch (RuntimeException e) {
+			auditFailure("PURGE", resource + "/" + subResource, parentUuid, request, e);
+			throw e;
+		}
 		// R-1: PURGE permanently removes data; record it so the action cannot be denied
 		AuditLog.success("PURGE", resource + "/" + subResource, parentUuid, request);
 		return RestUtil.noContent(response);
@@ -249,7 +292,28 @@ public class MainSubResourceController extends BaseRestController {
 		baseUriSetup.setup(request);
 		RequestContext context = RestUtil.getRequestContext(request, response);
 		SubResource res = (SubResource) restService.getResourceByName(buildResourceName(resource) + "/" + subResource);
-		res.put(parentUuid, post, context);
+		try {
+			res.put(parentUuid, post, context);
+		}
+		catch (RuntimeException e) {
+			// only metadata is logged, never the posted body, so secrets cannot leak
+			auditFailure("PUT", resource + "/" + subResource, parentUuid, request, e);
+			throw e;
+		}
+		AuditLog.success("PUT", resource + "/" + subResource, parentUuid, request);
 		return RestUtil.noContent(response);
+	}
+
+	/**
+	 * Writes an audit entry for a failed action, distinguishing an authorisation failure (DENIED)
+	 * from any other failure (FAILED). Mirrors the behaviour of {@link MainResourceController} so
+	 * sub-resource endpoints are audited the same way as top-level resource endpoints.
+	 */
+	private void auditFailure(String action, String resource, String uuid, HttpServletRequest request, RuntimeException e) {
+		if (e instanceof APIAuthenticationException || RestUtil.hasCause(e, APIAuthenticationException.class)) {
+			AuditLog.denied(action, resource, uuid, request);
+		} else {
+			AuditLog.failure(action, resource, uuid, request);
+		}
 	}
 }
