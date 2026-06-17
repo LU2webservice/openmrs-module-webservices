@@ -1,6 +1,6 @@
 # Gap-analyse-logging — openmrs-module-webservices.rest
 
-Deze analyse richt zich op het ontbreken van audit-logging in de REST-API, getoetst aan de NEN-7510 norm (A.8.15).
+Deze analyse richt zich op het ontbreken van audit-logging in de REST-API, getoetst aan de NEN-7510 norm (8.15).
 
 ## Logging Gap Analyse Overzicht
 
@@ -16,7 +16,7 @@ Deze analyse richt zich op het ontbreken van audit-logging in de REST-API, getoe
 ### 1. PATCH /user
 
 - **Huidige situatie:** Bij een `PATCH` request wordt een `200 OK` gegeven, ongeacht of de wijziging (bijv. in `roles`) daadwerkelijk wordt doorgevoerd. Er vindt geen logging plaats van deze actie.
-- **Gewenste situatie:** Volgens NEN-7510 A.8.15 moeten alle wijzigingen in gebruikersdata en autorisatierechten op de juiste manier worden gelogd, inclusief het resultaat van de operatie.
+- **Gewenste situatie:** Volgens NEN-7510 8.15 moeten alle wijzigingen in gebruikersdata en autorisatierechten op de juiste manier worden gelogd, inclusief het resultaat van de operatie.
 - **Gap:** Het systeem mist een log bij het wijzigingen van data en geeft foute response, waardoor ongeautoriseerde wijzigingspogingen onzichtbaar blijven.
 - **Oplossing:** Implementeer een `AuditInterceptor` die op alle `PATCH` operaties de acties van de user vastlegt.
 - **Source:** !
