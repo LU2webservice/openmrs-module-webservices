@@ -24,8 +24,6 @@ De risico's zijn geprioriteerd op basis van impact en kans binnen onze CI/CD pip
 
 ![image info](./images/riskmatrix.png)
 
----
-
 ## 2 Bow-Tie Analyse
 
 ### 1 Risico: Unauthorized deploy naar productie
@@ -34,11 +32,15 @@ _Beschrijving: Ongeautoriseerde code-wijziging bereikt de productieomgeving_
 
 ![Bow-Tie Diagram: Unauthenticated systeeminstellingen](./diagrams/Bowtie_CICD_unauthorized_deploy.png)
 
+---
+
 ### 2 Risico: Fouten in de beveiliging van de code
 
 _Beschrijving: Ontwikkelaar commit code met een beveiligingsfout. CodeQL voert Statische Analyses (SAST) & Security Unit Tests_
 
 ![Bow-Tie Diagram: Unauthenticated systeeminstellingen](./diagrams/Bowtie_CICD_foute_code.png)
+
+---
 
 ### 3 Risico: Gebruik van onveilige dependencys
 
@@ -46,7 +48,7 @@ _Beschrijving: Ontwikkelaar voegt een library toe met bekende kwetsbaarheid_
 
 ![Bow-Tie Diagram: Unauthenticated systeeminstellingen](./diagrams/Bowtie_CICD_foute_dependencys.png)
 
-## 4. Evaluatie en Conclusie
+## 3. Evaluatie en Conclusie
 
 - Onze deploy naar productie omgeving is beveiligd. Waar we eerst code konden deployen zonder checks word dit nu strict na gegaan.
 - Belangrijke functionaliteiten met fouten binnen de code worden getest. Waar het omgaan met autorisatie eerst zonder beveiligin ging word dit nu nagegaan aan de hand van code scans en unittesting
