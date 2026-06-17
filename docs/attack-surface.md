@@ -3,7 +3,7 @@
 **Versie:** 3.2.0 (OpenMRS Core 2.8.3+)
 **Datum:** 2026-06-12
 **Methodiek:** Broncode-analyse (`@GetMapping`/`@PostMapping`/`@RequestMapping`, filters, config.xml) + live tests
-**NEN-7510-2:2024 koppeling:** 8.25 (beveiligen tijdens de ontwikkelcyclus — attack surface mapping in de designfase)
+**NEN-7510:2024 koppeling:** 8.25 (beveiligen tijdens de ontwikkelcyclus — attack surface mapping in de designfase)
 **Bijbehorend threat model:** [threat-model.md](threat-model.md)
 
 ---
@@ -83,7 +83,7 @@ De opdracht vraagt ook niet-endpoint ingangen in kaart te brengen:
 | **HTTP-headers** | `Authorization: Basic`, `Cookie: JSESSIONID`, `Content-Type` | Basic Auth zonder TLS (S-1); Content-Type-blacklist te omzeilen (E-2) |
 | **Omgevingsvariabelen / config** | `webservices.rest.allowedips`, `webservices.rest.maxResults...`, secrets als global property in `runtime.properties` | Lege `allowedips` = alles toegestaan (TB-2); secrets lekken via `settings.form` (I-2/I-4) |
 
-### 2.2 NEN-7510-2:2024 — 8.25 gap-analyse per categorie
+### 2.2 NEN-7510:2024 — 8.25 gap-analyse per categorie
 
 Maatregel **8.25** ("attack surface mapping in de designfase; secure defaults") vraagt per entry point:
 *is er inputvalidatie* en *is er een autorisatiecheck*? De gaps:

@@ -1,7 +1,7 @@
 # Traceability Matrix - OpenMRS REST Webservices Module
 
 > **Wat is dit bestand?**
-> Een centrale traceerbaarheidsmatrix die per **NEN-7510-2:2024**-beheersmaatregel laat zien:
+> Een centrale traceerbaarheidsmatrix die per **NEN-7510:2024**-beheersmaatregel laat zien:
 > welk risico hij afdekt, welke maatregel we hebben genomen, in welk concreet artefact
 > (code, configuratie, test, CI-workflow of scan) dat is geimplementeerd, hoe het is geverifieerd
 > en in welk document het is onderbouwd. De matrix verzint niets: elke bewijscel verwijst naar
@@ -20,7 +20,7 @@
 | **Branch** | `Traceability-matrix` |
 | **Repository** | LU2webservice/openmrs-module-webservices ([github.com/LU2webservice/openmrs-module-webservices](https://github.com/LU2webservice/openmrs-module-webservices)) |
 | **Bewijs vastgelegd op** | commit `fc94a94` (merge van PR #37 `secure-backlog-fix`). De GitHub-permalinks in sectie 6 zijn vastgepind op de commit waarin elke maatregel landde, inclusief regelnummer; ze blijven dus geldig, ook als de mapstructuur later wijzigt. |
-| **Norm** | NEN-7510-2:2024 (afgeleid van ISO/IEC 27002:2022); ondersteunend: ISO/IEC 25010, AVG art. 9/33/34 |
+| **Norm** | NEN-7510:2024 (afgeleid van ISO/IEC 27002:2022); ondersteunend: ISO/IEC 25010, AVG art. 9/33/34 |
 | **Scope** | REST API-laag, authenticatie, autorisatie, logging, dependencies en de CI/CD-pijplijn |
 | **Voldoet aan eis** | Ja, minimaal 3 NEN-7510:2024-controls (hier 11); en elk bewijs is een traceerbaar artefact (zie sectie 6 artefactregister) |
 
@@ -32,7 +32,7 @@ Deze matrix beantwoordt de auditvraag: *"Toon aan dat elke beveiligingseis herle
 tot bewijs."* Dat doen we met een vaste traceerketen:
 
 ```
-NEN-7510-2:2024 control
+NEN-7510:2024 control
   |
   v
 Risico / eis  (STRIDE-ID uit het threat model, SR-ID uit de security backlog)
@@ -81,11 +81,11 @@ Elk bewijs is van een van deze traceerbare artefacttypen:
 
 ---
 
-## 3. Hoofdmatrix - NEN-7510-2:2024 naar traceerbaar bewijs
+## 3. Hoofdmatrix - NEN-7510:2024 naar traceerbaar bewijs
 
 > Elke rij is een traceerketen. Artefacten staan met bestandsnaam (geen mappaden).
 
-| # | NEN-7510-2:2024 | Eis (kort) | Risico / eis-ID | Maatregel | Implementatie-artefact (CODE/CONFIG) | Verificatie-artefact (TEST/CI/SCAN) | Document-artefact (DOC) | Status |
+| # | NEN-7510:2024 | Eis (kort) | Risico / eis-ID | Maatregel | Implementatie-artefact (CODE/CONFIG) | Verificatie-artefact (TEST/CI/SCAN) | Document-artefact (DOC) | Status |
 |:--:|---|---|:--:|---|---|---|---|---|
 | **1** | **8.15 Logging** | Gebruikersactiviteiten, fouten en beveiligingsgebeurtenissen vastleggen | R-1 / SR-5 | Audit-regel (wie/wat/wanneer/IP plus outcome) op alle state-changing endpoints; geen gevoelige data in log; log-injectie (CWE-117) afgevangen | `AuditLog.java`, `MainResourceController.java`, `MainSubResourceController.java` | `AuditLogTest.java`, `MainResourceControllerAuditTest.java`, `MainSubResourceControllerAuditTest.java` (31 tests, groen) plus live pentest | `r-1-auditlogging-bewijs.md`, `gap-analyse-logging.md` | Geimplementeerd, aangetoond |
 | **2** | **8.25 Beveiligen tijdens de ontwikkelcyclus** | Attack surface mapping in de designfase; secure defaults | (alle entry points) | Volledige inventarisatie van entry points met privilege-, inputvalidatie- en autorisatie-status per ingang | `AuthorizationFilter.java`, `ContentTypeFilter.java`, `config.xml` | Code-analyse plus live curl-tests (PT-1 t/m PT-15) | `attack-surface.md`, `threat-model.md` | Aangetoond |
@@ -106,11 +106,11 @@ Elk bewijs is van een van deze traceerbare artefacttypen:
 Hieronder vijf controls volledig uitgeschreven van norm tot bewijs. De eerste drie zijn de
 kern-controls; ze tonen aan dat de keten sluit en dat elk schakelpunt een bestaand artefact is.
 
-### 4.1 Keten - NEN-7510-2:2024 8.15 Logging (risico R-1)
+### 4.1 Keten - NEN-7510:2024 8.15 Logging (risico R-1)
 
 | Schakel | Artefact / inhoud | Type |
 |---|---|---|
-| **Norm** | NEN-7510-2:2024 8.15, gebruikersactiviteiten, uitzonderingen en beveiligingsgebeurtenissen loggen | NORM |
+| **Norm** | NEN-7510:2024 8.15, gebruikersactiviteiten, uitzonderingen en beveiligingsgebeurtenissen loggen | NORM |
 | **Risico** | R-1 Incomplete auditlogging (repudiation), klasse C3 Middel | DOC: `threat-model.md` sectie Repudiation |
 | **Eis** | SR-5: "Na DELETE staat entry in auditlog met user, UUID, timestamp en IP" | DOC: `security-backlog-pentest-rapport.md` sectie 1.2 |
 | **Gap** | `PATCH/POST /user`, `GET /systemsetting`, `GET /session` werden niet gelogd | DOC: `gap-analyse-logging.md` |
@@ -123,11 +123,11 @@ kern-controls; ze tonen aan dat de keten sluit en dat elk schakelpunt een bestaa
 | **Bewijsdocument** | Volledige onderbouwing plus voldaan-tabel | DOC: `r-1-auditlogging-bewijs.md`, `testresultaten-overzicht.md` |
 | **Status** | Geimplementeerd, aangetoond | - |
 
-### 4.2 Keten - NEN-7510-2:2024 8.3 Toegangsbeperking (risico I-2/I-4, secrets-lek)
+### 4.2 Keten - NEN-7510:2024 8.3 Toegangsbeperking (risico I-2/I-4, secrets-lek)
 
 | Schakel | Artefact / inhoud | Type |
 |---|---|---|
-| **Norm** | NEN-7510-2:2024 8.3, toegang tot informatie beperken tot bevoegden | NORM |
+| **Norm** | NEN-7510:2024 8.3, toegang tot informatie beperken tot bevoegden | NORM |
 | **Risico** | I-4 Secrets-lek via `settings.form/search`, geeft global-property-waarden (DB-wachtwoorden, API-keys) ongeauthenticeerd terug; valt buiten `AuthorizationFilter`. Klasse E4/E5 KRITIEK | DOC: `threat-model.md` sectie I-4, `attack-surface.md` sectie 3 |
 | **Eis** | SR-7: `showForm()`/`searchProperties()` geeft HTTP 403 voor laag-privilege gebruiker | DOC: `security-backlog-pentest-rapport.md` |
 | **Maatregel** | `Context.requirePrivilege(MANAGE_GLOBAL_PROPERTIES)` op beide methoden, 403 zonder rechten | - |
@@ -136,11 +136,11 @@ kern-controls; ze tonen aan dat de keten sluit en dat elk schakelpunt een bestaa
 | **Open testwerk** | Dedicated 401/403-regressietest voor laag-privilege gebruiker nog toe te voegen | DOC: `remediatie-status.md` sectie 1 (eerlijke kanttekening) |
 | **Status** | Geimplementeerd | - |
 
-### 4.3 Keten - NEN-7510-2:2024 8.8 Beheer van technische kwetsbaarheden (DEP-1/DEP-2)
+### 4.3 Keten - NEN-7510:2024 8.8 Beheer van technische kwetsbaarheden (DEP-1/DEP-2)
 
 | Schakel | Artefact / inhoud | Type |
 |---|---|---|
-| **Norm** | NEN-7510-2:2024 8.8, informatie over technische kwetsbaarheden tijdig verkrijgen en verhelpen | NORM |
+| **Norm** | NEN-7510:2024 8.8, informatie over technische kwetsbaarheden tijdig verkrijgen en verhelpen | NORM |
 | **Risico** | DEP-1 Tomcat Jasper 6.0.53 (EOL, 3x CVSS 9.8) en DEP-2 swagger-core 1.6.2 met SnakeYAML kleiner dan 2.0 (CVE-2022-1471, CVSS 9.8). Klasse D4 KRITIEK | DOC: `security-backlog-pentest-rapport.md` PT-10 |
 | **Eis** | SR-10 / SR-12: geen CVSS 9.8-bevindingen meer in de scan; SnakeYAML groter of gelijk aan 2.0 in dependency-tree | DOC: backlog sectie 1.2 |
 | **Maatregel** | `tomcat-jasper:9.0.106` (provided), `swagger-core:1.6.12` (trekt SnakeYAML 2.2), `jackson-yaml 2.19.1`, `commons-codec 1.17.1` | - |
@@ -151,22 +151,22 @@ kern-controls; ze tonen aan dat de keten sluit en dat elk schakelpunt een bestaa
 | **Kanttekening** | Major upgrades horen voor productie nog een volledige regressietest (swagger-generatie, JSP op Tomcat 9) | DOC: `remediatie-status.md` sectie 4 |
 | **Status** | Geimplementeerd, continu | - |
 
-### 4.4 Keten - NEN-7510-2:2024 8.29 Beveiligingstesten (SAST plus pentest)
+### 4.4 Keten - NEN-7510:2024 8.29 Beveiligingstesten (SAST plus pentest)
 
 | Schakel | Artefact / inhoud | Type |
 |---|---|---|
-| **Norm** | NEN-7510-2:2024 8.29, beveiligingstesten tijdens ontwikkeling en acceptatie | NORM |
+| **Norm** | NEN-7510:2024 8.29, beveiligingstesten tijdens ontwikkeling en acceptatie | NORM |
 | **Maatregel** | CodeQL SAST (`security-and-quality`-set) bij elke push/PR en wekelijks; blokkeert merge. Aangevuld met een handmatige STRIDE-pentest | - |
 | **Implementatie** | `codeql.yml` (verplichte check `Analyze (java)`) | CI |
 | **Verificatie** | Code scanning alerts in de Security-tab; concrete vangst: CWE-117 log-injectie gevonden en opgelost | CI/TEST: `r-1-auditlogging-bewijs.md` sectie 4.5 |
 | **Verificatie** | 15 pentest-cases (PT-1 t/m PT-15) met expliciet oplos/accepteer-besluit | DOC: `security-backlog-pentest-rapport.md` sectie 2 t/m 4 |
 | **Status** | Geimplementeerd, continu, aangetoond | - |
 
-### 4.5 Keten - NEN-7510-2:2024 8.25 Attack surface mapping (designfase)
+### 4.5 Keten - NEN-7510:2024 8.25 Attack surface mapping (designfase)
 
 | Schakel | Artefact / inhoud | Type |
 |---|---|---|
-| **Norm** | NEN-7510-2:2024 8.25, beveiligen tijdens de ontwikkelcyclus; secure defaults | NORM |
+| **Norm** | NEN-7510:2024 8.25, beveiligen tijdens de ontwikkelcyclus; secure defaults | NORM |
 | **Maatregel** | Alle entry points in kaart met vereiste privilege / inputvalidatie aanwezig? / autorisatiecheck aanwezig?; zone-indeling op filterketen | - |
 | **Implementatie/onderbouwing** | Filterketen: `AuthorizationFilter.java`, `ContentTypeFilter.java`, `config.xml` (url-patterns) | CODE/CONFIG |
 | **Verificatie** | Per entry point getoetst via curl (Zone A/B/C) en code review | DOC: `attack-surface.md` sectie 2 t/m 5 |
@@ -331,6 +331,6 @@ Actions en Security tonen de uitvoering van de pipelines en de scan-resultaten.
 | **Herleidbaar naar bron-analyse** | Ja | Elke keten verwijst naar het onderbouwende DOC-artefact (threat model, pentest, gap-analyse) |
 | **Bestandsnaam in plaats van paden** | Ja | Artefacten worden alleen met bestandsnaam genoemd, zodat de matrix blijft kloppen na herinrichting van de mapstructuur |
 
-> **Samenvatting:** deze matrix sluit de keten van NEN-7510-2:2024-control, risico, maatregel,
+> **Samenvatting:** deze matrix sluit de keten van NEN-7510:2024-control, risico, maatregel,
 > code/config, test/CI/scan, document voor elf beheersmaatregelen. Geen enkele cel verwijst naar
 > iets dat niet bestaat: alle artefacten zijn op bestandsnaam opgenomen in sectie 6.

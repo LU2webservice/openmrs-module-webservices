@@ -43,7 +43,7 @@ Elke verbetering hieronder is terug te koppelen naar deze bronnen.
 |---|---|---|
 | Threat model (STRIDE + C4) | Dreigingen, trust boundaries (TB-1...TB-7), beveiligingsdoelen (BG-1...BG-6) | `threat-model.md` |
 | Risicocriteria en risicoregister | BIV/CIA-schaal, kans x impact-score, risicoklassen, beslisregels | `risk-criteria.md`, `risk-matrix.md`, `risk-evaluation.md` |
-| Risk assessment report | Mitigatie per bevinding, koppeling NEN 7510-2:2024, **kostenraming** | `risk-assessment-report.md` |
+| Risk assessment report | Mitigatie per bevinding, koppeling NEN-7510:2024, **kostenraming** | `risk-assessment-report.md` |
 | BIV/CIA-risicoanalyse | Kroonjuwelen, toegepast risicoregister | `biv-risicoanalyse.md` |
 | Gap-analyses | Huidige versus gewenste situatie, NEN 7510-koppeling | `gap-analyse.md`, `gap-analyse-logging.md` |
 | Security backlog + pentestrapport | Geprioriteerde requirements (SR-1...SR-18) met **effort**, en pentestbevindingen (PT-1...PT-15) met **gemeten exploiteerbaarheid** en het oplos/accepteer-besluit | `security-backlog-pentest-rapport.md` |
@@ -74,7 +74,7 @@ expliciete basis voor elke positie in de backlog in §5.
    Binnen dezelfde impactklasse pakken we de **laagste-effort items eerst** (quick wins),
    zodat per bestede uur het meeste risico verdwijnt.
 4. **Compliance-driver.** Elke verbetering koppelt aan een concrete maatregel uit
-   **NEN 7510-2:2024 / ISO 27002:2022** en, waar relevant, aan AVG art. 9 / 33 / 34. Een
+   **NEN-7510:2024 / ISO 27002:2022** en, waar relevant, aan AVG art. 9 / 33 / 34. Een
    bevinding die **gezondheidsgegevens of IAM/secrets** raakt, mag nooit stilletjes open
    blijven staan.
 
@@ -106,7 +106,7 @@ pentest als geen echt probleem heeft aangetoond.
 
 | Verbetering | Bevinding | Bewijs (meting) |
 |---|---|---|
-| **Auditlogging op alle state-changing endpoints** (SR-5) | **R-1** Incomplete auditlogging (C3, Middel) | Gebouwd en bewezen met **31 geautomatiseerde tests, allemaal groen** (`testresultaten-overzicht.md`). Rood/groen-bewijs: de controllertest **faalt (6/6)** op de oude code en **slaagt** na de fix. Een **live pentest** (curl tegen de draaiende container) toont echte `DENIED`/`FAILED`-auditregels met `user`, `uuid`, `when`, `ip` (`r-1-auditlogging-bewijs.md`). Koppelt aan NEN 7510-2:2024 **8.15 Logging**. |
+| **Auditlogging op alle state-changing endpoints** (SR-5) | **R-1** Incomplete auditlogging (C3, Middel) | Gebouwd en bewezen met **31 geautomatiseerde tests, allemaal groen** (`testresultaten-overzicht.md`). Rood/groen-bewijs: de controllertest **faalt (6/6)** op de oude code en **slaagt** na de fix. Een **live pentest** (curl tegen de draaiende container) toont echte `DENIED`/`FAILED`-auditregels met `user`, `uuid`, `when`, `ip` (`r-1-auditlogging-bewijs.md`). Koppelt aan NEN-7510:2024 **8.15 Logging**. |
 
 > Dit is het ene item uit de Middel-klasse dat we naar voren hebben gehaald en afgerond,
 > omdat het direct testbaar was en een expliciete NEN 7510-eis is voor een EPD-systeem. Het
@@ -142,7 +142,7 @@ onderbouwing en koppelt elk item aan zijn analyse en zijn meting.
 
 ### P0 - Kritiek (oplossen vóór productie-deploy)
 
-| # | ID | Verbetering | Score - klasse | Effort | NEN 7510-2:2024 | Waarom deze rang (analyse + meting) |
+| # | ID | Verbetering | Score - klasse | Effort | NEN-7510:2024 | Waarom deze rang (analyse + meting) |
 |:--:|---|---|:---:|:---:|---|---|
 | 1 | **SR-7** | `@Authorized('Manage RESTWS')` op de instellingenpagina (`SettingsFormController.searchProperties()`) | **E4 - Kritiek** | **Klein** | 8.3, 5.15, 8.24 | **Quick win.** PT-7 (code review) bevestigde dat het endpoint **geen auth-check** heeft en global-property-**waarden incl. secrets/API-keys** teruggeeft, en onder `/module/*` valt *buiten* de `AuthorizationFilter` (TB-4). Catastrofale impact, fix van één annotatie -> hoogste rendement van de hele backlog. |
 | 2 | **SR-12** | Upgrade `swagger-core 1.6.2 -> 1.6.12+` (trekt SnakeYAML >= 2.0 mee) | **D4 - Kritiek** | **Klein** | 8.8 | **Quick win.** PT-10 (SCA) bevestigde transitief **SnakeYAML < 2.0**, **CVE-2022-1471 CVSS 9.8** (deserialisatie-RCE). Eén dependency-bump haalt een 9.8 weg -> direct doen. |
@@ -150,14 +150,14 @@ onderbouwing en koppelt elk item aan zijn analyse en zijn meting.
 
 ### P1 - Hoog
 
-| # | ID | Verbetering | Score - klasse | Effort | NEN 7510-2:2024 | Waarom deze rang (analyse + meting) |
+| # | ID | Verbetering | Score - klasse | Effort | NEN-7510:2024 | Waarom deze rang (analyse + meting) |
 |:--:|---|---|:---:|:---:|---|---|
 | 4 | **SR-17** | `@Authorized` toevoegen aan `/cleardbcache` (`ClearDbCacheController2_0`) | **C4 - Hoog** | **Klein** | 5.15, 8.6 | **Quick win.** PT-14 bevestigde HTTP **204 voor een anonieme aanroeper** - iedereen kan de volledige Hibernate-cache wissen (DoS). Oorzaak: ontbrekende annotatie + stil falend filter (TB-5/TB-6). Eén regel, hoge impact. |
 | 5 | **SR-1** | HTTPS/TLS afdwingen voor alle REST-endpoints (+ HSTS) | **D4 - Hoog** | Middel | 8.24, 8.5 | PT-1 bevestigde dat Basic-Auth-credentials als Base64 over HTTP leesbaar zijn (`admin:Admin123` te decoderen op de lijn). Reëel risico op een ziekenhuisnetwerk. Effort is Middel (config + deploy), dus na de Hoge quick win. |
 
 ### P2 - Middel
 
-| # | ID | Verbetering | Score - klasse | Effort | NEN 7510-2:2024 | Waarom deze rang (analyse + meting) |
+| # | ID | Verbetering | Score - klasse | Effort | NEN-7510:2024 | Waarom deze rang (analyse + meting) |
 |:--:|---|---|:---:|:---:|---|---|
 | 6 | **SR-3** | `Secure` + `SameSite=Strict` op de sessiecookie | **C3 - Middel** | **Klein** | 8.5, 8.24 | PT-3 bevestigde `HttpOnly` aanwezig, maar **`Secure` en `SameSite` ontbreken**. Samen met S-1 maakt dit sessie-hijacking mogelijk. Kleine effort -> eerste van de Middel-klasse. |
 | 7 | **SR-16** | `/session/diag` achter authenticatie plaatsen | **B3 - Middel** | **Klein** | 8.3 | PT-13 bevestigde dat `serverTime` **zonder auth** wordt teruggegeven en de `token`-param wordt **genegeerd** (schijnbeveiliging). Klein, lage-impact recon-lek. |
@@ -167,7 +167,7 @@ onderbouwing en koppelt elk item aan zijn analyse en zijn meting.
 
 ### P3 - Laag
 
-| # | ID | Verbetering | Score - klasse | Effort | NEN 7510-2:2024 | Waarom deze rang (analyse + meting) |
+| # | ID | Verbetering | Score - klasse | Effort | NEN-7510:2024 | Waarom deze rang (analyse + meting) |
 |:--:|---|---|:---:|:---:|---|---|
 | 11 | **SR-9** | Stack traces uitschakelen in productie (`enableStackTraceDetails=false`) | **B3 - Laag** | **Klein** | 8.28 | PT-9 bevestigde dat interne klassenamen in de response-body lekken. Configuratiewijziging, lage impact. |
 | 12 | **SR-13** | Upgrade `commons-codec 1.14 -> 1.17+` | **B2 - Laag** | **Klein** | 8.8 | PT-10: verouderd, geen actieve CVE's; opschoning. |

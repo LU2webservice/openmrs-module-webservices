@@ -16,7 +16,7 @@
 | **Scope** | Productiecode in `omod` en `omod-common` (geen test- of integratiecode) |
 | **Datum meting** | 2026-06-16 |
 | **Tools** | PMD 6.55.0 (smells), PMD-CPD (duplicatie), JaCoCo 0.8.13 (testdekking), McCabe-script (complexiteit) |
-| **Norm** | ISO/IEC 25010 (onderhoudbaarheid) · NEN 7510-2:2024 8.28 (veilig coderen) |
+| **Norm** | ISO/IEC 25010 (onderhoudbaarheid) · NEN-7510:2024 8.28 (veilig coderen) |
 
 ---
 
