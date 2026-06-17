@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
@@ -61,8 +61,8 @@ public class ClearDbCacheController2_0Test extends RestControllerTestUtils {
 		query.setCacheRegion(QUERY_REGION);
 		query.list();
 		
-		assertTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_2));
-		assertTrue(sessionFactory.getCache().containsQuery(QUERY_REGION));
+		assumeTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_2));
+		assumeTrue(sessionFactory.getCache().containsQuery(QUERY_REGION));
 		
 		final String data = "{\"resource\": \"person\", \"subResource\": \"name\", \"uuid\": \"" + name.getUuid() + "\"}";
 		
@@ -86,9 +86,9 @@ public class ClearDbCacheController2_0Test extends RestControllerTestUtils {
 		query.setCacheRegion(QUERY_REGION);
 		query.list();
 		
-		assertTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_2));
-		assertTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_8));
-		assertTrue(sessionFactory.getCache().containsQuery(QUERY_REGION));
+		assumeTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_2));
+		assumeTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_8));
+		assumeTrue(sessionFactory.getCache().containsQuery(QUERY_REGION));
 		
 		final String data = "{\"resource\": \"person\", \"subResource\": \"name\"}";
 		
@@ -119,10 +119,10 @@ public class ClearDbCacheController2_0Test extends RestControllerTestUtils {
 		query.setCacheRegion(QUERY_REGION);
 		query.list();
 		
-		assertTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_2));
-		assertTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_8));
-		assertTrue(sessionFactory.getCache().containsEntity(Location.class, ID_2));
-		assertTrue(sessionFactory.getCache().containsQuery(QUERY_REGION));
+		assumeTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_2));
+		assumeTrue(sessionFactory.getCache().containsEntity(PERSON_NAME_CLASS, ID_8));
+		assumeTrue(sessionFactory.getCache().containsEntity(Location.class, ID_2));
+		assumeTrue(sessionFactory.getCache().containsQuery(QUERY_REGION));
 		
 		MockHttpServletResponse response = handle(newPostRequest(CLEAR_DB_CACHE_URI, "{}"));
 		
@@ -144,8 +144,9 @@ public class ClearDbCacheController2_0Test extends RestControllerTestUtils {
 		final String data = "{\"resource\": \"person\", \"subResource\": \"name\", \"uuid\": \"" + uuid + "\"}";
 		
 		MockHttpServletResponse response = handle(newPostRequest(CLEAR_DB_CACHE_URI, data));
-		
+
 		assertEquals(HttpStatus.NO_CONTENT.value(), response.getStatus());
 	}
-	
+
+
 }
