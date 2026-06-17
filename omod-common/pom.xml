@@ -11,9 +11,13 @@
 	<description>OpenMRS module project for Rest Web Services</description>
 
 	<dependencies>
+		<!-- SR-10 / DEP-1: Tomcat Jasper 6.0.53 (EOL, 3x CVSS 9.8) -> 9.0.x. Het artifact heet
+		     vanaf Tomcat 8.5+ 'tomcat-jasper' (niet meer 'jasper'). Scope blijft 'provided': het
+		     wordt niet gebundeld, maar dwingt de JSP-compile-API op een gepatchte versie en
+		     documenteert dat de deploymentserver Tomcat 9.x moet draaien. -->
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
-			<artifactId>jasper</artifactId>
+			<artifactId>tomcat-jasper</artifactId>
 			<version>${apacheTomcatVersion}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -30,10 +34,12 @@
 			<version>1.2.2</version>
 		</dependency>
 
+		<!-- SR-12 / DEP-2: 1.6.2 -> 1.6.12 trekt SnakeYAML >= 2.0 mee en verhelpt CVE-2022-1471
+		     (CVSS 9.8). Blijft binnen de 1.6.x-lijn, dus de io.swagger.models-API blijft gelijk. -->
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-core</artifactId>
-			<version>1.6.2</version>
+			<version>1.6.12</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>

@@ -48,7 +48,7 @@
 		<MODULE_NAME>${project.name}</MODULE_NAME>
 		<MODULE_VERSION>${project.parent.version}</MODULE_VERSION>
 		<MODULE_PACKAGE>${project.parent.groupId}.${project.parent.artifactId}</MODULE_PACKAGE>
-		<apacheTomcatVersion>6.0.53</apacheTomcatVersion>
+		<apacheTomcatVersion>9.0.106</apacheTomcatVersion>
 		<javaxVersion>4.0.1</javaxVersion>
 		<jacksonVersion>2.19.1</jacksonVersion>
 		<!-- Minimale code coverage waar de build op faalt als het eronder zakt.
@@ -149,7 +149,7 @@
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.14</version>
+				<version>1.17.1</version>
 				<type>jar</type>
 				<scope>compile</scope>
 			</dependency>

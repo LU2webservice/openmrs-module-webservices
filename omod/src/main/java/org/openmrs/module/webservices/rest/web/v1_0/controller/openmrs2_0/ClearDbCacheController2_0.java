@@ -21,6 +21,7 @@ import org.openmrs.module.webservices.rest.web.api.RestService;
 import org.openmrs.module.webservices.rest.web.resource.api.Resource;
 import org.openmrs.module.webservices.rest.web.resource.impl.BaseDelegatingResource;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
+import org.openmrs.util.PrivilegeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,12 @@ public class ClearDbCacheController2_0 extends BaseRestController {
 	@RequestMapping
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void clearDbCache(@RequestBody(required = false) String json) throws Exception {
+		// SR-17 / D-4: het wissen van de Hibernate DB-cache is een systeem-/DB-laag-operatie.
+		// Zonder deze check kon iedere (zelfs anonieme) aanroeper de volledige cache wissen,
+		// omdat dit endpoint geen eigen autorisatie had en de AuthorizationFilter stil faalt.
+		// requirePrivilege gooit APIAuthenticationException -> HTTP 403 bij gebrek aan rechten.
+		Context.requirePrivilege(PrivilegeConstants.SQL_LEVEL_ACCESS);
+
 		String resourceName = null;
 		String subResourceName = null;
 		String uuid = null;

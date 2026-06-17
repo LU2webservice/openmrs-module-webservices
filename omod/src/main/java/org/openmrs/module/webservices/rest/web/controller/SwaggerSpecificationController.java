@@ -11,6 +11,7 @@ package org.openmrs.module.webservices.rest.web.controller;
 
 import com.google.common.net.HttpHeaders;
 import io.swagger.models.Scheme;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.docs.swagger.SwaggerSpecificationCreator;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller("SwaggerSpecificationController")
 @RequestMapping("/module/webservices/rest/swagger.json")
@@ -25,8 +27,17 @@ public class SwaggerSpecificationController {
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody
-	String getSwaggerSpecification(HttpServletRequest request) throws Exception {
-		
+	String getSwaggerSpecification(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		// SR-18 / I-6: dit endpoint valt onder /module/* en dus BUITEN de AuthorizationFilter.
+		// Zonder deze check lekt de volledige API-specificatie (alle endpoints, parameters en
+		// schema's) ongeauthenticeerd uit en versnelt dat aanvalsverkenning. Daarom hier expliciet
+		// authenticatie afdwingen; niet-ingelogde aanvragen krijgen HTTP 401.
+		if (!Context.isAuthenticated()) {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			return null;
+		}
+
 		String host = request.getHeader(HttpHeaders.HOST);
 		
 		String scheme = request.getHeader(HttpHeaders.X_FORWARDED_PROTO);

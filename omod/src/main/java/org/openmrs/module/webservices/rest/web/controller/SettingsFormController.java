@@ -18,6 +18,7 @@ import org.openmrs.GlobalProperty;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.web.RestConstants;
+import org.openmrs.util.PrivilegeConstants;
 import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -37,6 +38,8 @@ public class SettingsFormController {
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public void showForm() {
+		// SR-7 / I-2: beheerpagina alleen voor wie global properties mag beheren.
+		Context.requirePrivilege(PrivilegeConstants.MANAGE_GLOBAL_PROPERTIES);
 	}
 
 	/**
@@ -50,7 +53,11 @@ public class SettingsFormController {
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	@org.springframework.web.bind.annotation.ResponseBody
 	public String searchProperties(@org.springframework.web.bind.annotation.RequestParam(value = "prefix", defaultValue = "") String prefix) {
-		// Missing auth: no Context.isAuthenticated() check; any HTTP client can call this endpoint
+		// SR-7 / I-4: KRITIEK secrets-lek. Dit endpoint gaf eerder zonder enige autorisatie de
+		// naam EN waarde van alle global properties terug (incl. wachtwoorden/API-keys), en valt
+		// onder /module/* dus buiten de AuthorizationFilter. requirePrivilege gooit
+		// APIAuthenticationException -> HTTP 403 voor wie geen global properties mag beheren.
+		Context.requirePrivilege(PrivilegeConstants.MANAGE_GLOBAL_PROPERTIES);
 		StringBuilder result = new StringBuilder("[");
 		for (GlobalProperty gp : Context.getAdministrationService().getGlobalPropertiesByPrefix(prefix)) {
 			// Returns property names AND values — may expose passwords, API keys, and other secrets stored as global properties
