@@ -10,10 +10,14 @@ persoonsgegevens gaat (AVG art. 9) toetsen we aan **NEN 7510**.
 
 ## Documentatie (`docs/`)
 
-Alle analyse, tests en onderbouwing staan in de map `docs/`, opgedeeld in twee onderdelen:
+Alle analyse, tests en onderbouwing staan als losse Markdown-bestanden direct in de map `docs/`
+(afbeeldingen en diagrammen in `docs/assets/`). Het overkoepelende overzicht is
+`docs/traceability-matrix.md`, dat elke NEN-7510-eis koppelt aan code, tests en documenten.
 
-- **`docs/security/`** - alles rond beveiliging: analyse, risico's, pentest en de oplossingen.
-- **`docs/onderhoudbaarheid/`** - alles rond onderhoudbaarheid: tests, code coverage en verbeteringen.
+- Beveiliging: `threat-model.md`, `attack-surface.md`, `security-backlog-pentest-rapport.md`, `remediatie-status.md`, `r-1-auditlogging-bewijs.md`
+- Risico: `biv-risicoanalyse.md`, `risk-matrix.md`, `risk-evaluation.md`, `risk-bowtie.md`
+- Onderhoudbaarheid: `onderhoudbaarheid-analyse.md`, `testresultaten-overzicht.md`, `code-coverage.md`, `improvements.md`
+- Proces en audit: `cicd.md`, `gap-analyse.md`, `gap-analyse-logging.md`, `pipeline-compliance.md`
 
 ---
 
@@ -68,7 +72,7 @@ Integratietests (vereisen een draaiende OpenMRS-server):
 mvn clean verify -Pintegration-tests -DtestUrl=http://admin:Admin123@localhost:8080/openmrs
 ```
 
-Details en resultaten staan in `docs/maintainability/Testresultaten_overzicht.md`.
+Details en resultaten staan in `docs/testresultaten-overzicht.md`.
 
 ---
 

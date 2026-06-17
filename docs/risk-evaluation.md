@@ -22,7 +22,7 @@ De risico's zijn geprioriteerd op basis van impact en kans binnen onze CI/CD pip
 
 <br />
 
-![image info](./images/riskmatrix.png)
+![image info](assets/riskmatrix.png)
 
 ## 2 Bow-Tie Analyse
 
@@ -30,7 +30,7 @@ De risico's zijn geprioriteerd op basis van impact en kans binnen onze CI/CD pip
 
 _Beschrijving: Ongeautoriseerde code-wijziging bereikt de productieomgeving_
 
-![Bow-Tie Diagram: Unauthenticated systeeminstellingen](./diagrams/Bowtie_CICD_unauthorized_deploy.png)
+![Bow-Tie Diagram: Unauthenticated systeeminstellingen](assets/Bowtie_CICD_unauthorized_deploy.png)
 
 ---
 
@@ -38,7 +38,7 @@ _Beschrijving: Ongeautoriseerde code-wijziging bereikt de productieomgeving_
 
 _Beschrijving: Ontwikkelaar commit code met een beveiligingsfout. CodeQL voert Statische Analyses (SAST) & Security Unit Tests_
 
-![Bow-Tie Diagram: Unauthenticated systeeminstellingen](./diagrams/Bowtie_CICD_foute_code.png)
+![Bow-Tie Diagram: Unauthenticated systeeminstellingen](assets/Bowtie_CICD_foute_code.png)
 
 ---
 
@@ -46,7 +46,7 @@ _Beschrijving: Ontwikkelaar commit code met een beveiligingsfout. CodeQL voert S
 
 _Beschrijving: Ontwikkelaar voegt een library toe met bekende kwetsbaarheid_
 
-![Bow-Tie Diagram: Unauthenticated systeeminstellingen](./diagrams/Bowtie_CICD_foute_dependencys.png)
+![Bow-Tie Diagram: Unauthenticated systeeminstellingen](assets/Bowtie_CICD_foute_dependencys.png)
 
 ## 3. Evaluatie en Conclusie
 

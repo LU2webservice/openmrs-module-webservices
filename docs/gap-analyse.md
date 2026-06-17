@@ -19,8 +19,8 @@ ___
 
 **Source:**
 
-![Image](images/Gap-analyse-1-roles.png "Roles from user")
-![Image](images/Gap-analyse-1-role-checklist.png "Roles checklist")
+![Image](assets/Gap-analyse-1-roles.png "Roles from user")
+![Image](assets/Gap-analyse-1-role-checklist.png "Roles checklist")
 
 ___
 
@@ -38,7 +38,7 @@ ___
 1. Routeer alle API-verzoeken via een centrale identity provider die MFA aanbiedt.
 2. Pas de API-architectuur aan zodat er na de eerste inlog gebruik wordt gemaakt van een tijdelijk en uniek JWT-token, zodat wachtwoorden beveiligd met de API meegestuurd worden.
    **Source:**
-   ![Image](images/Gap-analyse-2-auth-access-any.png "Authorization accessible to any")
+   ![Image](assets/Gap-analyse-2-auth-access-any.png "Authorization accessible to any")
 
 ___
 
@@ -58,4 +58,4 @@ ___
 3. Initialiseer in OpenMRS dat accounts tijdelijk worden vergrendeld na bijvoorbeeld 3 of 5 opeenvolgende foute inlogpogingen via de API aan de hand van Rate Limiting.
 
 **Source:**
-![Image](images/Gap-analyse-3-bruteforce.png "Authorization accessible to any")
+![Image](assets/Gap-analyse-3-bruteforce.png "Authorization accessible to any")

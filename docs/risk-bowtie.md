@@ -6,7 +6,7 @@ Dit zijn bowties van onze grootste risicos binnen ons systeem.
 
 ### 1. Risico: Unauthenticated systeeminstellingen
 
-![Bow-Tie Diagram: Unauthenticated systeeminstellingen](./diagrams/Bowtie_diagram_Unauthenticated_systeeminstellingen.png)
+![Bow-Tie Diagram: Unauthenticated systeeminstellingen](assets/Bowtie_diagram_Unauthenticated_systeeminstellingen.png)
 
 ---
 
@@ -14,7 +14,7 @@ Dit zijn bowties van onze grootste risicos binnen ons systeem.
 
 _Beschrijving: HTTP Basic Auth verstuurt credentials als Base64; zonder TLS zijn deze vatbaar voor onderschepping._
 
-![Bow-Tie Diagram: Basic Auth onderschepping](./diagrams/Bowtie_diagram_auth_onderschepping.png)
+![Bow-Tie Diagram: Basic Auth onderschepping](assets/Bowtie_diagram_auth_onderschepping.png)
 
 ---
 
@@ -22,7 +22,7 @@ _Beschrijving: HTTP Basic Auth verstuurt credentials als Base64; zonder TLS zijn
 
 _Beschrijving: Inkomende JSON wordt direct op domeinobjecten gemapped, waardoor gevoelige velden zoals 'uuid' of 'voided' ongeoorloofd kunnen worden gewijzigd._
 
-![Bow-Tie Diagram: Mass assignment](./diagrams/Bowtie_diagram_mass_assignment.png)
+![Bow-Tie Diagram: Mass assignment](assets/Bowtie_diagram_mass_assignment.png)
 
 ---
 
@@ -30,4 +30,4 @@ _Beschrijving: Inkomende JSON wordt direct op domeinobjecten gemapped, waardoor 
 
 _Beschrijving: Schrijftoegang op `/user` kan leiden tot ongeautoriseerde rol- of privilege-aanpassingen door gebrekkige autorisatiecontrole._
 
-![Bow-Tie Diagram: Privilege-escalatie via /user](./diagrams/Bowtie_diagram_privilege-escalatie.png)
+![Bow-Tie Diagram: Privilege-escalatie via /user](assets/Bowtie_diagram_privilege-escalatie.png)

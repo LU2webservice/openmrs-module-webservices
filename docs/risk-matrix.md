@@ -29,4 +29,4 @@ Dit is de risk matrix (kans x impact) om een beeld te krijgen van de risisco's d
 
 <br />
 
-![image info](./images/riskmatrix.png)
+![image info](assets/riskmatrix.png)

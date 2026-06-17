@@ -21,8 +21,8 @@ Deze analyse richt zich op het ontbreken van audit-logging in de REST-API, getoe
 - **Oplossing:** Implementeer een `AuditInterceptor` die op alle `PATCH` operaties de acties van de user vastlegt.
 - **Source:** !
   <br />
-  ![Image](images/Gap-analyse-massassignment-unauthorized-results.png "Unauthorized 200OK")
-  ![Image](images/Gap-analyse-massassignment-roles.png "Unauthorized 200OK")
+  ![Image](assets/Gap-analyse-massassignment-unauthorized-results.png "Unauthorized 200OK")
+  ![Image](assets/Gap-analyse-massassignment-roles.png "Unauthorized 200OK")
 
 ### 2. POST /user
 
@@ -32,7 +32,7 @@ Deze analyse richt zich op het ontbreken van audit-logging in de REST-API, getoe
 - **Oplossing:** Voeg autorisatiechecks toe op rol wijzigingen en log elke geweigerde of succesvolle wijziging.
 - **Source:**
   <br />
-  ![Image](images/Gap-analyse-privilege-result.png "Roles changed")
+  ![Image](assets/Gap-analyse-privilege-result.png "Roles changed")
 
 ### 3. GET /systemsetting
 
@@ -50,5 +50,5 @@ Deze analyse richt zich op het ontbreken van audit-logging in de REST-API, getoe
 - **Oplossing:** Retourneer `401 Unauthorized` bij ongeauthenticeerde toegang en log elke succesvolle inlogpoging.
 - **Source:**
   <br />
-  ![Image](images/Gap-analyse-logging-unauthenticated.png "Unauthorized 200OK")
-  ![Image](images/Gap-analyse-logging-authentication-succes.png "Authorization 200OK")
+  ![Image](assets/Gap-analyse-logging-unauthenticated.png "Unauthorized 200OK")
+  ![Image](assets/Gap-analyse-logging-authentication-succes.png "Authorization 200OK")

@@ -44,11 +44,11 @@ Elke verbetering hieronder is terug te koppelen naar deze bronnen.
 | Threat model (STRIDE + C4) | Dreigingen, trust boundaries (TB-1...TB-7), beveiligingsdoelen (BG-1...BG-6) | `threat-model.md` |
 | Risicocriteria en risicoregister | BIV/CIA-schaal, kans x impact-score, risicoklassen, beslisregels | `risk-criteria.md`, `risk-matrix.md`, `risk-evaluation.md` |
 | Risk assessment report | Mitigatie per bevinding, koppeling NEN 7510-2:2024, **kostenraming** | `risk-assessment-report.md` |
-| BIV/CIA-risicoanalyse | Kroonjuwelen, toegepast risicoregister | `BIV-risicoanalyse.md` |
-| Gap-analyses | Huidige versus gewenste situatie, NEN 7510-koppeling | `01-gap-analyse.md`, `Gap-analyse-logging.md` |
-| Security backlog + pentestrapport | Geprioriteerde requirements (SR-1...SR-18) met **effort**, en pentestbevindingen (PT-1...PT-15) met **gemeten exploiteerbaarheid** en het oplos/accepteer-besluit | `Security_Backlog_Pentest_Rapport.md` |
-| Testresultaten | Auditlogging-tests (R-1), regressierun | `Testresultaten_overzicht.md`, `R-1_auditlogging_bewijs.md` |
-| CI/CD en coverage | Pipeline-controles (SAST/SCA/SBOM), coverage-gate | `CICD.md`, `CODE_COVERAGE.md` |
+| BIV/CIA-risicoanalyse | Kroonjuwelen, toegepast risicoregister | `biv-risicoanalyse.md` |
+| Gap-analyses | Huidige versus gewenste situatie, NEN 7510-koppeling | `gap-analyse.md`, `gap-analyse-logging.md` |
+| Security backlog + pentestrapport | Geprioriteerde requirements (SR-1...SR-18) met **effort**, en pentestbevindingen (PT-1...PT-15) met **gemeten exploiteerbaarheid** en het oplos/accepteer-besluit | `security-backlog-pentest-rapport.md` |
+| Testresultaten | Auditlogging-tests (R-1), regressierun | `testresultaten-overzicht.md`, `r-1-auditlogging-bewijs.md` |
+| CI/CD en coverage | Pipeline-controles (SAST/SCA/SBOM), coverage-gate | `cicd.md`, `code-coverage.md` |
 
 ---
 
@@ -106,7 +106,7 @@ pentest als geen echt probleem heeft aangetoond.
 
 | Verbetering | Bevinding | Bewijs (meting) |
 |---|---|---|
-| **Auditlogging op alle state-changing endpoints** (SR-5) | **R-1** Incomplete auditlogging (C3, Middel) | Gebouwd en bewezen met **31 geautomatiseerde tests, allemaal groen** (`Testresultaten_overzicht.md`). Rood/groen-bewijs: de controllertest **faalt (6/6)** op de oude code en **slaagt** na de fix. Een **live pentest** (curl tegen de draaiende container) toont echte `DENIED`/`FAILED`-auditregels met `user`, `uuid`, `when`, `ip` (`R-1_auditlogging_bewijs.md`). Koppelt aan NEN 7510-2:2024 **8.15 Logging**. |
+| **Auditlogging op alle state-changing endpoints** (SR-5) | **R-1** Incomplete auditlogging (C3, Middel) | Gebouwd en bewezen met **31 geautomatiseerde tests, allemaal groen** (`testresultaten-overzicht.md`). Rood/groen-bewijs: de controllertest **faalt (6/6)** op de oude code en **slaagt** na de fix. Een **live pentest** (curl tegen de draaiende container) toont echte `DENIED`/`FAILED`-auditregels met `user`, `uuid`, `when`, `ip` (`r-1-auditlogging-bewijs.md`). Koppelt aan NEN 7510-2:2024 **8.15 Logging**. |
 
 > Dit is het ene item uit de Middel-klasse dat we naar voren hebben gehaald en afgerond,
 > omdat het direct testbaar was en een expliciete NEN 7510-eis is voor een EPD-systeem. Het
@@ -204,10 +204,10 @@ maar concreet.
 
 | # | Verbetering | Onderbouwing (bron) | Effort |
 |:--:|---|---|:---:|
-| M1 | Zet de aparte **audit-logger op `INFO` in productie** zodat ook geslaagde acties (niet alleen `DENIED`/`FAILED`) live worden vastgelegd | De container staat standaard op `WARN`, dus SUCCESS-regels worden nog niet in productie bewaard (`R-1_auditlogging_bewijs.md` §4.6) | Klein |
-| M2 | Koppel de **integratietests** (`SessionIT`) achter een profiel/stage in de CI | Ze vereisen nu een draaiende server en worden **niet automatisch** gedraaid (`Testresultaten_overzicht.md` §3) | Middel |
-| M3 | Quarantaine / stabiliseer de flaky **`ClearDbCacheController2_0Test`** (Hibernate-cache-timing) | Bevestigd flaky **ook op de originele OpenMRS-code**, los van onze wijziging (`Testresultaten_overzicht.md` §2.2) | Klein |
-| M4 | Verhoog de **coverage-gate** mee als de dekking groeit (property staat al in `pom.xml`) | Huidige gecombineerde dekking **82,8%** (omod **86,6%**) ligt boven de **80%**-gate; verhoog naar 85% als het structureel hoger is (`CODE_COVERAGE.md`) | Klein |
+| M1 | Zet de aparte **audit-logger op `INFO` in productie** zodat ook geslaagde acties (niet alleen `DENIED`/`FAILED`) live worden vastgelegd | De container staat standaard op `WARN`, dus SUCCESS-regels worden nog niet in productie bewaard (`r-1-auditlogging-bewijs.md` §4.6) | Klein |
+| M2 | Koppel de **integratietests** (`SessionIT`) achter een profiel/stage in de CI | Ze vereisen nu een draaiende server en worden **niet automatisch** gedraaid (`testresultaten-overzicht.md` §3) | Middel |
+| M3 | Quarantaine / stabiliseer de flaky **`ClearDbCacheController2_0Test`** (Hibernate-cache-timing) | Bevestigd flaky **ook op de originele OpenMRS-code**, los van onze wijziging (`testresultaten-overzicht.md` §2.2) | Klein |
+| M4 | Verhoog de **coverage-gate** mee als de dekking groeit (property staat al in `pom.xml`) | Huidige gecombineerde dekking **82,8%** (omod **86,6%**) ligt boven de **80%**-gate; verhoog naar 85% als het structureel hoger is (`code-coverage.md`) | Klein |
 
 ---
 
@@ -218,11 +218,11 @@ verbetering hoort dezelfde meting opnieuw te draaien om te bewijzen dat het risi
 
 | Metriek | Huidige gemeten waarde | Bron | Doel na verbetering |
 |---|---|---|---|
-| Geslaagde geautomatiseerde tests | **1.910** gedraaid; onze **31** audit-tests deterministisch groen; 1 bestaande flaky OpenMRS-test | `Testresultaten_overzicht.md` | Geen regressie; flaky test in quarantaine (M3) |
-| Gecombineerde code coverage | **82,8%** (omod 86,6%), gate op 80% | `CODE_COVERAGE.md` | >= 80%, verhogen naar 85% (M4) |
+| Geslaagde geautomatiseerde tests | **1.910** gedraaid; onze **31** audit-tests deterministisch groen; 1 bestaande flaky OpenMRS-test | `testresultaten-overzicht.md` | Geen regressie; flaky test in quarantaine (M3) |
+| Gecombineerde code coverage | **82,8%** (omod 86,6%), gate op 80% | `code-coverage.md` | >= 80%, verhogen naar 85% (M4) |
 | Kritieke dependency-CVE's | **2 x CVSS 9.8** (Tomcat Jasper, SnakeYAML) + 1 x 7.5 (jackson-yaml, test) | PT-10 / Grype SCA | 0 kritiek na SR-10/SR-12; schone scan na SR-11 |
 | Bevestigd-exploiteerbare bevindingen | **7 open** (I-2/I-4, S-1, D-4, S-2, D-3, I-5, I-6) + dependency-CVE's | Pentest §4 | Naar 0 via P0-P2 |
-| Auditlogging-dekking van state-changing endpoints | **100%** van de REST CRUD-endpoints (top-level + sub-resource controller) | `Testresultaten_overzicht.md` | Behouden; SUCCESS live vastgelegd (M1) |
+| Auditlogging-dekking van state-changing endpoints | **100%** van de REST CRUD-endpoints (top-level + sub-resource controller) | `testresultaten-overzicht.md` | Behouden; SUCCESS live vastgelegd (M1) |
 
 ---
 
@@ -248,13 +248,13 @@ verbetering hoort dezelfde meting opnieuw te draaien om te bewijzen dat het risi
 | Document |
 |---|
 | `threat-model.md` |
-| `Security_Backlog_Pentest_Rapport.md` |
-| `R-1_auditlogging_bewijs.md` |
-| `Testresultaten_overzicht.md` |
+| `security-backlog-pentest-rapport.md` |
+| `r-1-auditlogging-bewijs.md` |
+| `testresultaten-overzicht.md` |
 | `risk-matrix.md`, `risk-evaluation.md` |
-| `CICD.md` |
+| `cicd.md` |
 | `risk-criteria.md`, `risk-assessment-report.md` |
-| `01-gap-analyse.md`, `Gap-analyse-logging.md` |
-| `BIV-risicoanalyse.md` |
-| `CODE_COVERAGE.md` |
+| `gap-analyse.md`, `gap-analyse-logging.md` |
+| `biv-risicoanalyse.md` |
+| `code-coverage.md` |
 </content>

@@ -13,7 +13,7 @@
 |---|---|
 | **Branch** | `code-tests-logging` |
 | **Risico-item** | R-1, Incomplete auditlogging (zie [threat-model.md](threat-model.md)) |
-| **Gap-analyse** | `docs/auditrapport/Gap-analyse-logging.md` (branch `docs_auditreport_gapanalysis`) |
+| **Gap-analyse** | `gap-analyse-logging.md` (branch `docs_auditreport_gapanalysis`) |
 | **Norm** | NEN-7510 / ISO 27002:2022, beheersmaatregel 8.15 (Logging) |
 | **Datum** | 2026-06-15 |
 
@@ -288,7 +288,7 @@ WARN. De OpenMRS-container staat standaard op WARN, dus de security-relevante re
 FAILED) komen meteen in het log. Om ook de SUCCESS-regels (zoals aanval B) live vast te leggen,
 moet het aparte audit-logger-niveau in productie op INFO worden gezet. De volledige set uitkomsten
 inclusief SUCCESS is sowieso al aangetoond in sectie 4.3. Dit sluit direct aan op PT-5 uit het
-[pentestrapport](Security_Backlog_Pentest_Rapport.md), dat eerder niet controleerbaar was.
+[pentestrapport](security-backlog-pentest-rapport.md), dat eerder niet controleerbaar was.
 
 ---
 
@@ -336,7 +336,7 @@ Alle andere tests bewijzen de **nieuwe** situatie. Zo zie je het verschil binnen
 | Onderdeel | Locatie |
 |---|---|
 | Risico-omschrijving R-1 | [threat-model.md](threat-model.md) (sectie *Repudiation*) |
-| Gap-analyse logging | `docs/auditrapport/Gap-analyse-logging.md` (branch `docs_auditreport_gapanalysis`) |
+| Gap-analyse logging | `gap-analyse-logging.md` (branch `docs_auditreport_gapanalysis`) |
 | Het log-hulpje | `omod-common/src/main/java/org/openmrs/module/webservices/rest/web/audit/AuditLog.java` |
 | Koppeling in de controllers | `MainResourceController.java` en `MainSubResourceController.java` (map `.../v1_0/controller/`) |
 | Test 1, log-hulpje | `omod-common/src/test/java/org/openmrs/module/webservices/rest/web/audit/AuditLogTest.java` |
