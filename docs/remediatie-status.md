@@ -2,8 +2,8 @@
 
 > **Wat is dit bestand?**
 > Een overzicht van welke backlog-bedreigingen zijn **opgelost** (en hoe), en welke **bewust
-> niet** zijn opgelost (en waarom). Het sluit aan op de [security backlog](Security_Backlog_Pentest_Rapport.md)
-> (SR-1 t/m SR-18) en het [verbeterplan](../maintainability/Improvements.md).
+> niet** zijn opgelost (en waarom). Het sluit aan op de [security backlog](security-backlog-pentest-rapport.md)
+> (SR-1 t/m SR-18) en het [verbeterplan](improvements.md).
 
 | | |
 |---|---|
@@ -35,7 +35,7 @@ autorisatiecontrole (`Context.requirePrivilege(...)` / `isAuthenticated()`), zoa
 - **Compilatie/packaging:** volledige reactor `mvn clean package` → BUILD SUCCESS.
 - **Regressie:** de bestaande `ClearDbCacheController2_0Test` (draait als super-user) blijft
   groen op de autorisatie; de enige failure is de al bekende, pre-existing flaky L2-cache-test
-  (zie `../maintainability/Testresultaten_overzicht.md` §2.2), niet de fix.
+  (zie `testresultaten-overzicht.md` §2.2), niet de fix.
 - **Nog open testwerk:** dedicated regressietests die 401/403 voor een *laag-privilege* gebruiker
   hard aantonen (de "rood-dan-groen"-stap) zijn nog niet toegevoegd.
 
@@ -45,7 +45,7 @@ autorisatiecontrole (`Context.requirePrivilege(...)` / `isAuthenticated()`), zoa
 
 | ID | Dreiging | Status | Bewijs |
 |---|---|---|---|
-| **SR-5** | R-1 — Incomplete auditlogging | ✅ Al gebouwd (team) | `AuditLog` + 31 tests, zie `R-1_auditlogging_bewijs.md` |
+| **SR-5** | R-1 — Incomplete auditlogging | ✅ Al gebouwd (team) | `AuditLog` + 31 tests, zie `r-1-auditlogging-bewijs.md` |
 | **SR-8** | E-2 — XML content-type bypass | ✅ Al gemitigeerd | `ContentTypeFilter` blokkeert XML; PT-8 niet exploiteerbaar |
 | **SR-4** | T-2 — SQL-injectie via search | ✅ Niet exploiteerbaar | Hibernate gebruikt named parameters; PT-4 |
 

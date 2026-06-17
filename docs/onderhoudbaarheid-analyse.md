@@ -5,7 +5,7 @@
 > module, onderbouwd met **echte, reproduceerbare metrieken**. Ik meet de code met
 > standaardtools (PMD, PMD-CPD, JaCoCo) plus een transparant complexiteitsscript, koppel de
 > uitkomsten aan de onderhoudbaarheids-subkenmerken van **ISO/IEC 25010**, wijs de
-> **hotspots** aan en verbind die met het bestaande [verbeterplan](Improvements.md).
+> **hotspots** aan en verbind die met het bestaande [verbeterplan](improvements.md).
 >
 > Alles in dit document is op **2026-06-16** echt gedraaid op branch `code-tests-logging`;
 > de commando's staan erbij zodat het na te rekenen is.
@@ -16,7 +16,7 @@
 | **Scope** | Productiecode in `omod` en `omod-common` (geen test- of integratiecode) |
 | **Datum meting** | 2026-06-16 |
 | **Tools** | PMD 6.55.0 (smells), PMD-CPD (duplicatie), JaCoCo 0.8.13 (testdekking), McCabe-script (complexiteit) |
-| **Norm** | ISO/IEC 25010 (onderhoudbaarheid) · NEN 7510-2:2024 8.28 (veilig coderen) |
+| **Norm** | ISO/IEC 25010 (onderhoudbaarheid) · NEN-7510:2024 8.28 (veilig coderen) |
 
 ---
 
@@ -108,7 +108,7 @@ Dat is gunstig: gericht refactoren van die hotspots levert het meeste op.
 **Patroon:** de zwaarste methoden zijn (a) twee centrale helpers (`ConversionUtil.convert`,
 `SimpleObjectConverter.marshal`) en (b) de `search()`-methoden van de zoek-handlers. Dit zijn
 precies de plekken waar je bij een wijziging het meest oplet — en, niet toevallig, ook waar de
-inputvalidatie-vraag uit de [attack surface](../security/attack-surface.md) speelt (T-2).
+inputvalidatie-vraag uit de [attack surface](attack-surface.md) speelt (T-2).
 
 ---
 
@@ -186,7 +186,7 @@ en beter gemoduleerd, en een hoge testdekking maakt wijzigingen veiliger.
 | Coverage-gate (faalt build eronder) | **80%** | `pom.xml` |
 | Geautomatiseerde tests | **1.910** | volledige testrun |
 
-Details en de onderbouwing van de 80%-drempel staan in [CODE_COVERAGE.md](../CODE_COVERAGE.md).
+Details en de onderbouwing van de 80%-drempel staan in [code-coverage.md](code-coverage.md).
 **Interpretatie:** ruim boven de norm; de codebase is goed testbaar en de gate beschermt
 tegen sluipende verslechtering.
 
@@ -211,7 +211,7 @@ klasse (`ConversionUtil`). Dat maakt verbetering goedkoop en gericht.
 ## 8. Concrete verbeteracties (gekoppeld aan het verbeterplan)
 
 Deze acties volgen rechtstreeks uit de metingen hierboven. Ze sluiten aan op §7 van
-[Improvements.md](Improvements.md) (onderhoudbaarheid & testbaarheid).
+[improvements.md](improvements.md) (onderhoudbaarheid & testbaarheid).
 
 | # | Actie | Aanleiding (metriek) | Effort |
 |:--:|---|---|:--:|
@@ -224,7 +224,7 @@ Deze acties volgen rechtstreeks uit de metingen hierboven. Ze sluiten aan op §7
 
 > Geen van deze acties is een security-blocker — ze verbeteren de **onderhoudbaarheid**, niet
 > de veiligheid. De security-prioriteiten staan apart in de
-> [security backlog](../security/Security_Backlog_Pentest_Rapport.md).
+> [security backlog](security-backlog-pentest-rapport.md).
 
 ---
 
@@ -236,5 +236,5 @@ Deze acties volgen rechtstreeks uit de metingen hierboven. Ze sluiten aan op §7
 | Duplicatie-rapport (CPD) | `omod/target/cpd.xml`, `omod-common/target/cpd.xml` |
 | Testdekking (JaCoCo) | `coverage-report/target/site/jacoco-aggregate/index.html` |
 | Complexiteitsmethode | McCabe: `1 + aantal {if,for,while,case,catch,&&,||,?}` per methode |
-| Verbeterplan (acties) | [Improvements.md](Improvements.md) §7 |
-| Testbaarheid-onderbouwing | [CODE_COVERAGE.md](../CODE_COVERAGE.md) |
+| Verbeterplan (acties) | [improvements.md](improvements.md) §7 |
+| Testbaarheid-onderbouwing | [code-coverage.md](code-coverage.md) |

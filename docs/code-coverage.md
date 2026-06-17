@@ -3,7 +3,7 @@
 In dit bestand leg ik uit hoe we de testdekking van onze code meten en bewaken. Welke
 tool we gebruiken, hoe het in de build en in de CI zit, welke ondergrens we hebben
 gekozen en waarom, en hoe je het rapport vindt. Het sluit aan op de pijplijn die in
-[CICD.md](CICD.md) staat beschreven.
+[cicd.md](cicd.md) staat beschreven.
 
 ## Wat is code coverage en waarom doen we dit
 
@@ -94,7 +94,7 @@ mensen de check omzeilen, en dan ben je slechter af dan met een haalbare grens.
 
 Keuze: de gate blokkeert de build. Waarom: dit gaat over de testdekking van onze eigen
 code, en daar gaan wij zelf over. Dat is precies het soort check dat volgens
-[CICD.md](CICD.md) mag blokkeren, in tegenstelling tot bijvoorbeeld lekken in
+[cicd.md](cicd.md) mag blokkeren, in tegenstelling tot bijvoorbeeld lekken in
 OpenMRS-libraries waar wij niet bij kunnen.
 
 Omdat de grens een property is, kun je hem later in een regel bijstellen, bijvoorbeeld

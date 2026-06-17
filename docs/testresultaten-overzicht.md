@@ -18,7 +18,7 @@
 | **Datum van deze testrun** | 2026-06-16 |
 | **Commando (alles)** | `mvn -o test` (vanuit de projectroot) |
 | **Resultaat** | 1.910 tests gedraaid; onze 31 audit-tests **0 failures** (deterministisch). 1 bestaande flaky OpenMRS-test los van onze wijziging, zie §2.2 |
-| **Gerelateerd** | [R-1_auditlogging_bewijs.md](../security/R-1_auditlogging_bewijs.md) (de uitgebreide pentest/bewijsvoering voor R-1), [Security_Backlog_Pentest_Rapport.md](../security/Security_Backlog_Pentest_Rapport.md) |
+| **Gerelateerd** | [r-1-auditlogging-bewijs.md](r-1-auditlogging-bewijs.md) (de uitgebreide pentest/bewijsvoering voor R-1), [security-backlog-pentest-rapport.md](security-backlog-pentest-rapport.md) |
 
 ---
 
@@ -74,10 +74,10 @@ ik toegevoegd:
 De REST API kan objecten **aanmaken**, **wijzigen**, **verwijderen** en **definitief wissen**.
 Voor de fix werd geen van die acties ergens vastgelegd: geen spoor van *wie* iets deed, *wat*,
 *wanneer* en *vanaf welk IP*. Dat is het risico **R-1 (Incomplete auditlogging / repudiation)**
-uit het [threat-model](../security/threat-model.md), bevestigd in PT-5 van het
-[pentestrapport](../security/Security_Backlog_Pentest_Rapport.md). De volledige analyse en het
+uit het [threat-model](threat-model.md), bevestigd in PT-5 van het
+[pentestrapport](security-backlog-pentest-rapport.md). De volledige analyse en het
 voor/na-bewijs (inclusief een live pentest tegen de draaiende Docker-container) staan in
-[R-1_auditlogging_bewijs.md](../security/R-1_auditlogging_bewijs.md). Dit hoofdstuk richt zich specifiek op
+[r-1-auditlogging-bewijs.md](r-1-auditlogging-bewijs.md). Dit hoofdstuk richt zich specifiek op
 **de tests zelf**: wat ze controleren en het resultaat van het opnieuw draaien.
 
 Er zijn drie testbestanden:
@@ -335,7 +335,7 @@ specifieke OpenMRS-deelversie).
 ### 2.3 Bestaande tests die rechtstreeks aan de security-backlog raken
 
 Een paar van de bestaande OpenMRS-tests zijn extra relevant omdat ze (deels) hetzelfde gebied
-raken als de bevindingen uit het [pentestrapport](../security/Security_Backlog_Pentest_Rapport.md). Voor de
+raken als de bevindingen uit het [pentestrapport](security-backlog-pentest-rapport.md). Voor de
 volledigheid, en om eerlijk te zijn over wat ze wél en niet aantonen:
 
 | Backlog-item | Testklasse | Wat de test al aantoont | Wat de test **niet** test |
@@ -349,7 +349,7 @@ volledigheid, en om eerlijk te zijn over wat ze wél en niet aantonen:
 Deze tabel laat zien dat het oplossen van een backlog-item (zoals SR-17) ook een **nieuwe of
 uitgebreide test** nodig heeft - het simpelweg bestaan van een testklasse met die naam betekent
 niet automatisch dat de kwetsbaarheid is afgedekt. Voor R-1 is dat traject in dit document
-(hoofdstuk 1) en in [R-1_auditlogging_bewijs.md](../security/R-1_auditlogging_bewijs.md) volledig doorlopen.
+(hoofdstuk 1) en in [r-1-auditlogging-bewijs.md](r-1-auditlogging-bewijs.md) volledig doorlopen.
 
 ---
 
@@ -373,7 +373,7 @@ mvn clean verify -Pintegration-tests -DtestUrl=http://admin:Admin123@localhost:8
 
 Ik heb dit niet in deze sessie gedraaid omdat daar een aparte, opgestarte OpenMRS-server voor
 nodig is (zie wel de **live pentest** met een draaiende Docker-container in
-[R-1_auditlogging_bewijs.md §4.6](../security/R-1_auditlogging_bewijs.md#46-penetration-test-risicoverlaging-aangetoond)
+[r-1-auditlogging-bewijs.md §4.6](r-1-auditlogging-bewijs.md#46-penetration-test-risicoverlaging-aangetoond)
 voor het equivalent: daar is de auditlogging al écht tegen een draaiende server getest).
 
 ---
@@ -423,9 +423,9 @@ mvn -o test
 
 | Onderdeel | Locatie |
 |---|---|
-| Risico-omschrijving R-1 | [threat-model.md](../security/threat-model.md) |
-| Pentestbevinding PT-5 | [Security_Backlog_Pentest_Rapport.md](../security/Security_Backlog_Pentest_Rapport.md) |
-| Volledige bewijsvoering R-1 (incl. live pentest) | [R-1_auditlogging_bewijs.md](../security/R-1_auditlogging_bewijs.md) |
+| Risico-omschrijving R-1 | [threat-model.md](threat-model.md) |
+| Pentestbevinding PT-5 | [security-backlog-pentest-rapport.md](security-backlog-pentest-rapport.md) |
+| Volledige bewijsvoering R-1 (incl. live pentest) | [r-1-auditlogging-bewijs.md](r-1-auditlogging-bewijs.md) |
 | Het log-hulpje | `omod-common/src/main/java/.../web/audit/AuditLog.java` |
 | Koppeling in de top-level controller | `omod-common/src/main/java/.../web/v1_0/controller/MainResourceController.java` |
 | Koppeling in de sub-resource controller | `omod-common/src/main/java/.../web/v1_0/controller/MainSubResourceController.java` |

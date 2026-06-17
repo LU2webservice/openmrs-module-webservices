@@ -24,7 +24,7 @@ De OpenMRS REST Webservices Module is de REST API-laag van het OpenMRS EPD-platf
 
 ## 2. C4 Level 0 – Systeemcontextdiagram
 
-![C4 Level 0 – Systeemcontextdiagram](images/c4-level0-context.png)
+![C4 Level 0 – Systeemcontextdiagram](assets/c4-level0-context.png)
 
 | Element | Type | Rol |
 |---|---|---|
@@ -38,7 +38,7 @@ De OpenMRS REST Webservices Module is de REST API-laag van het OpenMRS EPD-platf
 
 ## 3. C4 Level 1 – Containerdiagram
 
-![C4 Level 1 – Containerdiagram](images/c4-level1-container.png)
+![C4 Level 1 – Containerdiagram](assets/c4-level1-container.png)
 
 | Container | Verantwoordelijkheid | Binnen scope? |
 |---|---|---|
@@ -50,7 +50,7 @@ De OpenMRS REST Webservices Module is de REST API-laag van het OpenMRS EPD-platf
 
 ## 4. C4 Level 2 – Componentdiagram (REST Module intern)
 
-![C4 Level 2 – Componentdiagram](images/c4-level2-component.png)
+![C4 Level 2 – Componentdiagram](assets/c4-level2-component.png)
 
 > Scope: de interne structuur van de REST Module (.omod). Dit is het enige container binnen scope.
 
