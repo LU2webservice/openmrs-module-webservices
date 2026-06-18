@@ -1,8 +1,8 @@
 # Testresultaten overzicht - webservices.rest module
 
 > **Wat is dit bestand?**
-> Eén overzicht van **alle** geautomatiseerde tests in deze module: wat ze doen, of ze zijn
-> gedraaid, en wat het resultaat was. De tests zijn opgesplitst in twee groepen:
+> Eén overzicht van **alle** tests in deze module: wat ze doen, of ze zijn gedraaid, en wat het
+> resultaat was. De geautomatiseerde tests zijn opgesplitst in twee groepen:
 >
 > 1. **Onze eigen nieuwe tests** (audit logging, R-1) - hier ga ik diep op in: wat elke test
 >    precies controleert en met welke echte output.
@@ -10,7 +10,12 @@
 >    gedraaid en laat per categorie zien dat ze slagen, zonder elke losse test te bespreken
 >    (dat zijn er honderden en ze testen standaard OpenMRS-functionaliteit, niet onze wijziging).
 >
-> Alles in dit bestand is **echt gedraaid** op 16 juni 2026, niet overgenomen uit oude documentatie.
+> De module wordt **niet met één soort test** afgedekt maar met **meerdere testtypen** die elkaar
+> aanvullen — unit, component/controller, integratie (end-to-end), statische analyse (PMD/CPD),
+> SAST (CodeQL), dependency-scan (SCA) en een **handmatige (pen)test/DAST**. Dat overzicht staat in
+> **§0.6 (teststrategie)**. De geautomatiseerde run is **echt gedraaid op 16 juni 2026**; de **live
+> DAST-hertest** van de fixes is **echt gedraaid op 17 juni 2026** (zie **§2.4** en
+> [`pentest-hertest-17-06.md`](pentest-hertest-17-06.md)). Niets is overgenomen uit oude documentatie.
 
 | | |
 |---|---|
@@ -64,6 +69,29 @@ ik toegevoegd:
 - de volledige nieuwe klasse `MainSubResourceControllerAuditTest` (**14 tests**) - én de bijbehorende
   **fix** in de sub-resource controller, want die logde `create`/`update`/`put` nog helemaal niet en
   had geen failure-afhandeling (zie §1.6).
+
+### 0.6 Teststrategie - welke soorten tests dekken deze module?
+
+De module wordt **niet met één soort test** beoordeeld maar met een gelaagde strategie, zodat elke
+laag een ander soort fout vangt. Dit is de volledige set en waar het bewijs staat:
+
+| # | Testtype | Wat het vangt | Geautomatiseerd? | Bewijs / locatie |
+|:--:|---|---|:---:|---|
+| 1 | **Unit-test** | Losse logica (het log-hulpje `AuditLog`) | ✅ CI | `AuditLogTest` (8), §1.2 |
+| 2 | **Component-/controllertest** | Productiecode-koppeling (controllers loggen écht), succes/denied/failed | ✅ CI | `Main(Sub)ResourceControllerAuditTest` (9+14), §1.3/§1.4 |
+| 3 | **Regressie (bestaande suite)** | Onze wijziging breekt niets in 1.879 OpenMRS-tests | ✅ CI | §2 |
+| 4 | **Integratie / end-to-end** | Echte HTTP tegen een draaiende server (`rest-assured`) | ⚙️ apart profiel | `SessionIT` (2), §3 |
+| 5 | **Statische analyse** (PMD/CPD) | Code smells, complexiteit, duplicatie (onderhoudbaarheid/testbaarheid) | ✅ lokaal/CI | §5.1, `onderhoudbaarheid-analyse.md` |
+| 6 | **Code coverage** (JaCoCo) | Ongeteste code (blinde vlekken); gate faalt onder 80% | ✅ CI-gate | §5.2, `code-coverage.md` |
+| 7 | **SAST** (CodeQL) | Kwetsbaarheidspatronen in onze code (o.a. CWE-117 log-injectie) | ✅ CI | `cicd.md`, `r-1-auditlogging-bewijs.md` §4.5 |
+| 8 | **SCA / dependency-scan** (Grype) | Kwetsbare libraries (CVE's) | ✅ CI, wekelijks | §2.4, `pentest-hertest-17-06.md` §5 |
+| 9 | **DAST / handmatige (pen)test** | Echt exploiteerbaar gedrag op de draaiende stack (voor/na de fixes) | ❌ handmatig | **§2.4**, `pentest-hertest-17-06.md`, `r-1-auditlogging-bewijs.md` §4.6 |
+
+> **Leeswijzer.** Hoofdstuk 1–4 gaat over de **geautomatiseerde** tests (typen 1–4). De aanvullende
+> testtypen 5–9 — die de teststrategie "uitgebreid" maken in plaats van alleen unit/regressie — staan
+> in **§2.4** (DAST-hertest + SCA) en **§5** (statische analyse + coverage). Samen tonen ze hetzelfde
+> risico vanaf meerdere kanten aan: een controllertest bewijst dát de code logt, en de live pentest
+> bewijst dat het ook op een echte server gebeurt.
 
 ---
 
@@ -351,6 +379,46 @@ uitgebreide test** nodig heeft - het simpelweg bestaan van een testklasse met di
 niet automatisch dat de kwetsbaarheid is afgedekt. Voor R-1 is dat traject in dit document
 (hoofdstuk 1) en in [r-1-auditlogging-bewijs.md](r-1-auditlogging-bewijs.md) volledig doorlopen.
 
+### 2.4 Live (pen)test / DAST-hertest van de fixes (17-06-2026)
+
+Naast de geautomatiseerde tests is er een **handmatige dynamische test (DAST)** uitgevoerd tegen de
+**draaiende** stack (Docker, OpenMRS 2.8.x op Tomcat 9.0.118, MariaDB 10.11). Dit is een ander
+testtype dan hoofdstuk 1: geen Spring-mock maar **echte HTTP-requests (curl)** tegen een echte
+server, bewust **eerst op de oude build (zonder fixes)** om het kwetsbare gedrag te reproduceren, en
+daarna **opnieuw met de fixes** erin. Het volledige voor/na-bewijs staat in
+[`pentest-hertest-17-06.md`](pentest-hertest-17-06.md); hier de samenvatting:
+
+| Bevinding | Voor (oude build) | Na (met fixes) | Oordeel |
+|---|---|---|---|
+| **D-4** `cleardbcache` zonder auth | `HTTP 204` (cache gewist) | geweigerd ("SQL Level Access") | opgelost |
+| **I-5** `session/diag` zonder auth | `HTTP 200` + `serverTime` | `HTTP 401` | opgelost |
+| **E-2** XML content-type | — | `HTTP 415` geblokkeerd | bevestigd veilig |
+| **T-2** SQL-injectie | — | lege lijst, geen DB-fout | niet exploiteerbaar |
+| **D-1** resultaatlimiet | — | "absolute limit at 100" | afgedwongen |
+| **R-1** auditlogging | geen spoor | live `DENIED` + `FAILED` regels | opgelost |
+
+**R-1 live (echte container-log):**
+```
+WARN AuditLog.record AUDIT action=DELETE resource=location uuid=<uuid> outcome=DENIED  when=2026-06-17T20:58:56Z user=unknown ip=172.20.0.1
+WARN AuditLog.record AUDIT action=DELETE resource=location uuid=<uuid> outcome=FAILED  when=2026-06-17T20:58:56Z user=admin   ip=172.20.0.1
+```
+Dit is de **end-to-end-tegenhanger** van de controllertests in §1.3/§1.4: die bewijzen dát de code
+logt, dit bewijst dat het ook op een **echte draaiende server** gebeurt, met een echt client-IP.
+
+**Dependency-hertest (SCA / type 8).** `mvn dependency:tree` op de gefixte build bevestigt dat de
+kritieke CVE's weg zijn:
+```
+org.apache.tomcat:tomcat-jasper:9.0.106     (was 6.0.53, 3× CVSS 9.8)
+io.swagger:swagger-core:1.6.12              (trekt nu SnakeYAML 2.2/2.4 i.p.v. <2.0, CVE-2022-1471 9.8)
+commons-codec:commons-codec:1.17.1
+```
+
+> **Eerlijke kanttekening.** `cleardbcache` geeft na de fix een `HTTP 500` ("SQL Level Access") in
+> plaats van een nette `403`; de toegang wordt wél geweigerd (de cache blijft intact), maar een nette
+> `403` zou een kleine vervolgfix zijn. En `swagger.json`/`settings.form` (PT-7/PT-15) zijn
+> code-review-bevindingen die in deze Docker-opstelling niet live testbaar waren (`404`, de
+> admin-weblaag ontbreekt) — die zijn op codeniveau gefixt (zie `remediatie-status.md`).
+
 ---
 
 ## 3. Integration-tests (niet automatisch meegedraaid)
@@ -404,28 +472,79 @@ mvn -o test
 
 ---
 
-## 5. Voldoen we aan de eisen?
+## 5. Statische analyse en testdekking (aanvullende testtypen)
+
+Naast het uitvoeren van tests (typen 1–4, 9) meten we ook **of de code goed testbaar is** en **of er
+blinde vlekken zijn**. Dit zijn de testtypen 5 en 6 uit §0.6. De volledige onderbouwing staat in
+[`onderhoudbaarheid-analyse.md`](onderhoudbaarheid-analyse.md) en [`code-coverage.md`](code-coverage.md);
+hier de kern, gemeten op 2026-06-16.
+
+### 5.1 Statische analyse - PMD, CPD, complexiteit
+
+Gemeten met PMD 6.55.0 (smells), PMD-CPD (duplicatie) en een McCabe-complexiteitsscript. Dit vangt
+fouten **zonder de code te draaien**: te complexe methoden, gekopieerde code en risicovolle patronen.
+
+| Metriek | Waarde | Oordeel |
+|---|---|---|
+| Gem. cyclomatische complexiteit | **2,05** (mediaan 1) | Zeer goed; 94% van de methoden laag-complex |
+| Complexiteits-hotspots (CC 21+) | **8 methoden** (0,3%) | Geconcentreerd, niet diffuus — bv. `ConversionUtil.convert()` CC 48 |
+| Code-duplicatie | **~0,9%** (15 blokken) | Laag (drempel 3–5%); grotendeels versie-gerelateerd en verklaarbaar |
+| PMD-smells prioriteit 1–2 (kritiek/hoog) | **0** | Geen ernstige structurele smells |
+| PMD-smells totaal | 87 (m.n. cosmetisch; 16× `EmptyCatchBlock` als enige inhoudelijke aandachtspunt) | Aandacht, geen blocker |
+
+Draaien: `mvn org.apache.maven.plugins:maven-pmd-plugin:3.21.2:pmd ...:cpd -pl omod,omod-common`. De
+concrete refactor-acties (O1–O5) staan in [`improvements.md`](improvements.md) §7b.
+
+### 5.2 Testdekking - JaCoCo met blokkerende gate
+
+Code coverage meet welk deel van de code daadwerkelijk door een test wordt geraakt — de blinde
+vlekken. Een **gate** in de build faalt onder de norm, zodat de dekking niet stilletjes wegzakt.
+
+| Onderdeel | Dekking | Bron |
+|---|---|---|
+| `omod` (waar de gate op let) | **86,6%** | JaCoCo |
+| Gecombineerd `omod-common` + `omod` (337 klassen) | **82,8%** | JaCoCo-aggregaat |
+| Coverage-gate (build faalt eronder) | **80%** instructie / 65% branch | `pom.xml` |
+
+Draaien: `mvn clean verify` (rapport: `coverage-report/target/site/jacoco-aggregate/index.html`). De
+keuze voor 80% en de werking van de gate staan in [`code-coverage.md`](code-coverage.md).
+
+> **Interpretatie.** De codebase is **goed testbaar** (ISO 25010): laag-complex, weinig duplicatie,
+> geen kritieke smells, ruim boven de coverage-norm. Het risico is geconcentreerd in een handvol
+> methoden, waardoor gericht refactoren goedkoop is. Geen van deze metingen is een security-blocker.
+
+---
+
+## 6. Voldoen we aan de eisen?
 
 | Eis | Voldaan? | Bewijs |
 |---|---|---|
 | Relevante tests opgesteld | Ja | 31 eigen tests gericht op R-1 (audit logging), zie hoofdstuk 1 |
-| Tests zelf uitgevoerd | Ja | volledige `mvn -o test`-run vandaag (2026-06-16), zie hoofdstuk 4 |
-| Resultaten duidelijk vastgelegd | Ja | dit document + ruwe Maven-output bewaard |
+| Tests zelf uitgevoerd | Ja | volledige `mvn -o test`-run (2026-06-16), zie hoofdstuk 4; live DAST-hertest (2026-06-17), §2.4 |
+| Resultaten duidelijk vastgelegd | Ja | dit document + ruwe Maven-/curl-output bewaard |
 | Opsplitsing eigen vs. OpenMRS | Ja | hoofdstuk 1 (eigen) vs. hoofdstuk 2 (bestaand) |
 | Uitleg per test | Ja | per-test tabel in §1.2/§1.3/§1.4; per-categorie in §2.1/§2.2 voor de bestaande tests |
+| **Teststrategie uitgebreid (meerdere testtypen)** | Ja | **9 testtypen** in §0.6: unit, component, regressie, integratie, statische analyse (§5.1), coverage (§5.2), SAST, SCA en DAST/pentest (§2.4) |
 | **Alle state-changing endpoints gedekt** | Ja | top-level (`MainResourceController`) én sub-resource (`MainSubResourceController`) controllers, samen alle CRUD-endpoints van de REST-laag |
-| Geen regressie door onze wijziging | Ja | alle 1.879 bestaande tests slagen nog steeds, mét de audit-logging actief |
-| Eventuele test-gaten gedicht | Ja | 3 nieuwe tests (top-level CREATE/UPDATE/PURGE-denied, §1.3) + 14 nieuwe tests en een fix voor de sub-resource controller (§1.4/§1.6) |
+| Geen regressie door onze wijziging | Ja | alle 1.879 bestaande tests slagen nog steeds, mét de audit-logging actief; `mvn clean package` BUILD SUCCESS na de PR #37-fixes |
+| Resultaten reproduceerbaar | Ja | exacte `mvn`-commando's per sectie; live hertest reproduceerbaar via `pentest-hertest-17-06.md` |
+| Eventuele test-gaten gedicht | Deels | 3 nieuwe tests (top-level CREATE/UPDATE/PURGE-denied, §1.3) + 14 nieuwe tests en een fix voor de sub-resource controller (§1.4/§1.6). **Open testwerk:** dedicated 401/403-regressietests voor een laag-privilege gebruiker op de PR #37-fixes (`remediatie-status.md` §1, `improvements.md` §7a M5) |
 
 ---
 
-## 6. Herleidbaarheid
+## 7. Herleidbaarheid
 
 | Onderdeel | Locatie |
 |---|---|
 | Risico-omschrijving R-1 | [threat-model.md](threat-model.md) |
 | Pentestbevinding PT-5 | [security-backlog-pentest-rapport.md](security-backlog-pentest-rapport.md) |
 | Volledige bewijsvoering R-1 (incl. live pentest) | [r-1-auditlogging-bewijs.md](r-1-auditlogging-bewijs.md) |
+| Live voor/na-hertest van de fixes (DAST, 17-06) | [pentest-hertest-17-06.md](pentest-hertest-17-06.md) |
+| Remediatie-status (wat is opgelost / bewust niet) | [remediatie-status.md](remediatie-status.md) |
+| Onderhoudbaarheid (PMD/CPD/JaCoCo, §5) | [onderhoudbaarheid-analyse.md](onderhoudbaarheid-analyse.md) |
+| Code coverage (gate, §5.2) | [code-coverage.md](code-coverage.md) |
+| Norm-tot-bewijs-keten per maatregel | [traceability-matrix.md](traceability-matrix.md) |
+| Verbeterplan (prioritering + status) | [improvements.md](improvements.md) |
 | Het log-hulpje | `omod-common/src/main/java/.../web/audit/AuditLog.java` |
 | Koppeling in de top-level controller | `omod-common/src/main/java/.../web/v1_0/controller/MainResourceController.java` |
 | Koppeling in de sub-resource controller | `omod-common/src/main/java/.../web/v1_0/controller/MainSubResourceController.java` |
