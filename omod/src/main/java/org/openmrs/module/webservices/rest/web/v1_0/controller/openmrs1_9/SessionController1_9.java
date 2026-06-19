@@ -11,7 +11,9 @@ package org.openmrs.module.webservices.rest.web.v1_0.controller.openmrs1_9;
 
 import org.apache.commons.lang3.LocaleUtils;
 import org.openmrs.Location;
+import org.openmrs.Privilege;
 import org.openmrs.Provider;
+import org.openmrs.Role;
 import org.openmrs.User;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
@@ -177,12 +179,25 @@ public class SessionController1_9 extends BaseRestController {
 		if (!Context.isAuthenticated()) {
 			throw new APIAuthenticationException("Authentication is required to access diagnostics");
 		}
+		User authenticatedUser = Context.getAuthenticatedUser();
 		SimpleObject diag = new SimpleObject();
 		diag.add("authenticated", Context.isAuthenticated());
 		diag.add("serverTime", System.currentTimeMillis());
-		diag.add("currentUser", Context.getAuthenticatedUser().getUsername());
-		diag.add("userRoles", Context.getAuthenticatedUser().getRoles());
-		diag.add("userPrivileges", Context.getAuthenticatedUser().getPrivileges());
+		// username is leeg bij login via systemId; val daar dan op terug zodat currentUser nooit "" is
+		String username = authenticatedUser.getUsername();
+		diag.add("currentUser", (username != null && !username.isEmpty()) ? username : authenticatedUser.getSystemId());
+		// Serialiseer alleen de namen: de rauwe Role/Privilege-entiteiten laten Jackson falen
+		// (Role.getId() gooit UnsupportedOperationException) en lekken onnodig veel velden.
+		Set<String> roleNames = new HashSet<String>();
+		for (Role role : authenticatedUser.getRoles()) {
+			roleNames.add(role.getRole());
+		}
+		diag.add("userRoles", roleNames);
+		Set<String> privilegeNames = new HashSet<String>();
+		for (Privilege privilege : authenticatedUser.getPrivileges()) {
+			privilegeNames.add(privilege.getPrivilege());
+		}
+		diag.add("userPrivileges", privilegeNames);
 		return diag;
 	}
 }
