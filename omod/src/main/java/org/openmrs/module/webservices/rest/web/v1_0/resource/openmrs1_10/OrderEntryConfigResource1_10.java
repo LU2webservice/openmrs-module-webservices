@@ -9,6 +9,8 @@
  */
 package org.openmrs.module.webservices.rest.web.v1_0.resource.openmrs1_10;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.OrderService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.SimpleObject;
@@ -23,44 +25,38 @@ import org.openmrs.module.webservices.rest.web.response.ResponseException;
 @Resource(name = RestConstants.VERSION_1 + "/orderentryconfig", supportedClass = OrderService.class, supportedOpenmrsVersions = {
         "1.10.* - 9.*" })
 public class OrderEntryConfigResource1_10 implements Listable {
-	
+
+	private static final Log log = LogFactory.getLog(OrderEntryConfigResource1_10.class);
+
 	@Override
 	public SimpleObject getAll(RequestContext context) throws ResponseException {
 		OrderService orderService = Context.getOrderService();
-		
+
 		SimpleObject ret = new SimpleObject();
-		// try/catch each of these to avoid failing in the case where one of these is not configured
-		try {
-			ret.put("drugRoutes",
-			    ConversionUtil.convertToRepresentation(orderService.getDrugRoutes(), context.getRepresentation()));
-		}
-		catch (Exception ex) {}
-		try {
-			ret.put("drugDosingUnits",
-			    ConversionUtil.convertToRepresentation(orderService.getDrugDosingUnits(), context.getRepresentation()));
-		}
-		catch (Exception ex) {}
-		try {
-			ret.put("drugDispensingUnits",
-			    ConversionUtil.convertToRepresentation(orderService.getDrugDispensingUnits(), context.getRepresentation()));
-		}
-		catch (Exception ex) {}
-		try {
-			ret.put("durationUnits",
-			    ConversionUtil.convertToRepresentation(orderService.getDurationUnits(), context.getRepresentation()));
-		}
-		catch (Exception ex) {}
-		try {
-			ret.put("testSpecimenSources",
-			    ConversionUtil.convertToRepresentation(orderService.getTestSpecimenSources(), context.getRepresentation()));
-		}
-		catch (Exception ex) {}
-		try {
-			ret.put("orderFrequencies",
-			    ConversionUtil.convertToRepresentation(orderService.getOrderFrequencies(false), context.getRepresentation()));
-		}
-		catch (Exception ex) {}
+		// each entry is optional - if one of these is not configured we skip it (and log why) rather
+		// than letting the whole call fail
+		putIfConfigured(ret, "drugRoutes", orderService::getDrugRoutes, context);
+		putIfConfigured(ret, "drugDosingUnits", orderService::getDrugDosingUnits, context);
+		putIfConfigured(ret, "drugDispensingUnits", orderService::getDrugDispensingUnits, context);
+		putIfConfigured(ret, "durationUnits", orderService::getDurationUnits, context);
+		putIfConfigured(ret, "testSpecimenSources", orderService::getTestSpecimenSources, context);
+		putIfConfigured(ret, "orderFrequencies", () -> orderService.getOrderFrequencies(false), context);
 		return ret;
+	}
+
+	/**
+	 * Adds {@code key} to {@code ret} with the converted value from {@code valueSupplier}. If the value
+	 * cannot be obtained or converted (e.g. the concept is not configured), the entry is skipped and the
+	 * cause is logged instead of being silently swallowed.
+	 */
+	private void putIfConfigured(SimpleObject ret, String key, java.util.function.Supplier<Object> valueSupplier,
+	        RequestContext context) {
+		try {
+			ret.put(key, ConversionUtil.convertToRepresentation(valueSupplier.get(), context.getRepresentation()));
+		}
+		catch (Exception ex) {
+			log.debug("Order-entry config '" + key + "' is not configured, skipping", ex);
+		}
 	}
 	
 	@Override

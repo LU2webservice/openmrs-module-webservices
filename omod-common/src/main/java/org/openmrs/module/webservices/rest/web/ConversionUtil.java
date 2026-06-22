@@ -12,8 +12,6 @@ package org.openmrs.module.webservices.rest.web;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.openmrs.Auditable;
 import org.openmrs.Retireable;
 import org.openmrs.Voidable;
@@ -21,6 +19,8 @@ import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.api.RestService;
+import org.openmrs.module.webservices.rest.web.convert.TypeConverter;
+import org.openmrs.module.webservices.rest.web.convert.TypeConverterRegistry;
 import org.openmrs.module.webservices.rest.web.representation.CustomRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.DefaultRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
@@ -31,11 +31,7 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceD
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceHandler;
 import org.openmrs.module.webservices.rest.web.response.ConversionException;
 import org.openmrs.util.HandlerUtil;
-import org.openmrs.util.LocaleUtility;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -43,13 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -121,7 +112,11 @@ public class ConversionUtil {
 					result = (Converter<T>) resource;
 				}
 			}
-			catch (APIException e) {}
+			catch (APIException e) {
+				// no resource registered for this class - fall back to a Converter handler below.
+				// Logged (instead of silently swallowed) so the reason stays traceable.
+				log.debug("No REST resource found for " + clazz + ", trying Converter handlers", e);
+			}
 			
 			if (result == null) {
 				result = HandlerUtil.getPreferredHandler(Converter.class, clazz);
@@ -177,118 +172,18 @@ public class ConversionUtil {
 		if (object == null) {
 			return null;
 		}
-		
+
 		Class<?> toClass = toType instanceof Class ? ((Class<?>) toType) : (Class<?>) (((ParameterizedType) toType)
 		        .getRawType());
-		
-		// if we're trying to convert _to_ a collection, handle it as a special case
-		if (Collection.class.isAssignableFrom(toClass) || toClass.isArray()) {
-			if (!(object instanceof Collection))
-				throw new ConversionException("Can only convert a Collection to a Collection/Array. Not "
-				        + object.getClass() + " to " + toType, null);
-			
-			if (toClass.isArray()) {
-				Class<?> targetElementType = toClass.getComponentType();
-				Collection input = (Collection) object;
-				Object ret = Array.newInstance(targetElementType, input.size());
-				
-				int i = 0;
-				for (Object element : input) {
-					Array.set(ret, i, convert(element, targetElementType));
-					++i;
-				}
-				return ret;
-			}
-			
-			Collection ret = null;
-			if (SortedSet.class.isAssignableFrom(toClass)) {
-				ret = new TreeSet();
-			} else if (Set.class.isAssignableFrom(toClass)) {
-				ret = new HashSet();
-			} else if (List.class.isAssignableFrom(toClass)) {
-				ret = new ArrayList();
-			} else {
-				throw new ConversionException("Don't know how to handle collection class: " + toClass, null);
-			}
-			
-			if (toType instanceof ParameterizedType) {
-				// if we have generic type information for the target collection, we can use it to do conversion
-				ParameterizedType toParameterizedType = (ParameterizedType) toType;
-				Type targetElementType = toParameterizedType.getActualTypeArguments()[0];
-				for (Object element : (Collection) object) {
-					ret.add(convert(element, targetElementType));
-				}
-			} else {
-				// otherwise we must just add all items in a non-type-safe manner
-				ret.addAll((Collection) object);
-			}
-			return ret;
+
+		// Replace Conditional with Polymorphism: instead of one long if/else chain, look up the
+		// strategy responsible for this (source, target) pair and delegate to it. Adding a new
+		// conversion is done by registering a new TypeConverter, not by editing this method.
+		TypeConverter converter = TypeConverterRegistry.find(object, toClass, toType);
+		if (converter != null) {
+			return converter.convert(object, toClass, toType);
 		}
-		
-		// otherwise we're converting _to_ a non-collection type
-		
-		if (toClass.isAssignableFrom(object.getClass())) {
-			return object;
-		}
-		
-		// Numbers with a decimal are always assumed to be Double, so convert to Float, if necessary
-		if (toClass.isAssignableFrom(Float.class) && object instanceof Double) {
-			return new Float((Double) object);
-		}
-		
-		if (object instanceof String) {
-			String string = (String) object;
-			Converter<?> converter = getConverter(toClass);
-			if (converter != null)
-				return converter.getByUniqueId(string);
-			
-			if (toClass.isAssignableFrom(Date.class)) {
-				IllegalArgumentException pex = null;
-				String[] supportedFormats = { DATE_FORMAT, "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ssZ",
-				        "yyyy-MM-dd'T'HH:mm:ssXXX", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
-				for (int i = 0; i < supportedFormats.length; i++) {
-					try {
-						return DateTime.parse(string, DateTimeFormat.forPattern(supportedFormats[i])).toDate();
-					}
-					catch (IllegalArgumentException ex) {
-						pex = ex;
-					}
-				}
-				throw new ConversionException(
-				        "Error converting date - correct format (ISO8601 Long): yyyy-MM-dd'T'HH:mm:ss.SSSZ", pex);
-			} else if (toClass.isAssignableFrom(Locale.class)) {
-				return LocaleUtility.fromSpecification(object.toString());
-			} else if (toClass.isEnum()) {
-				return Enum.valueOf((Class<? extends Enum>) toClass, object.toString().toUpperCase());
-			} else if (toClass.isAssignableFrom(Class.class)) {
-				try {
-					return Context.loadClass((String) object);
-				}
-				catch (ClassNotFoundException e) {
-					throw new ConversionException("Could not convert from " + object.getClass() + " to " + toType, e);
-				}
-			}
-			// look for a static valueOf(String) method (e.g. Double, Integer, Boolean)
-			try {
-				Method method = toClass.getMethod("valueOf", String.class);
-				if (Modifier.isStatic(method.getModifiers()) && toClass.isAssignableFrom(method.getReturnType())) {
-					return method.invoke(null, string);
-				}
-			}
-			catch (Exception ex) {}
-		} else if (object instanceof Map) {
-			return convertMap((Map<String, ?>) object, toClass);
-		}
-		if (toClass.isAssignableFrom(Double.class) && object instanceof Number) {
-			return ((Number) object).doubleValue();
-		} else if (toClass.isAssignableFrom(Integer.class) && object instanceof Number) {
-			return ((Number) object).intValue();
-		}
-		
-		if (toClass.isAssignableFrom(String.class) && object instanceof Boolean) {
-			return String.valueOf(object);
-		}
-		
+
 		throw new ConversionException("Don't know how to convert from " + object.getClass() + " to " + toType, null);
 	}
 	

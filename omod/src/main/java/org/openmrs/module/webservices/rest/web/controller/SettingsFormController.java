@@ -14,6 +14,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
@@ -35,7 +37,9 @@ import org.springframework.web.context.request.WebRequest;
 @Controller("webservices.rest.SettingsFormController")
 @RequestMapping("/module/webservices/rest/settings.form")
 public class SettingsFormController {
-	
+
+	private static final Log log = LogFactory.getLog(SettingsFormController.class);
+
 	@RequestMapping(method = RequestMethod.GET)
 	public void showForm() {
 		// SR-7 / I-2: beheerpagina alleen voor wie global properties mag beheren.
@@ -155,7 +159,10 @@ public class SettingsFormController {
 							okay = true;
 						}
 					}
-					catch (Exception ex) {}
+					catch (Exception ex) {
+						// not a valid number -> stays invalid and is rejected below; log instead of swallowing
+						log.debug("Invalid value for " + RestConstants.MAX_RESULTS_DEFAULT_GLOBAL_PROPERTY_NAME, ex);
+					}
 					if (!okay)
 						errors.rejectValue("properties[" + i + "]", RestConstants.MODULE_ID
 						        + ".maxResultsDefault.errorMessage");
@@ -164,7 +171,10 @@ public class SettingsFormController {
 					try {
 						okay = Integer.valueOf(gp.getPropertyValue()) > 0;
 					}
-					catch (Exception ex) {}
+					catch (Exception ex) {
+						// not a valid number -> stays invalid and is rejected below; log instead of swallowing
+						log.debug("Invalid value for " + RestConstants.MAX_RESULTS_ABSOLUTE_GLOBAL_PROPERTY_NAME, ex);
+					}
 					if (!okay)
 						errors.rejectValue("properties[" + i + "]", RestConstants.MODULE_ID
 						        + ".maxResultsAbsolute.errorMessage");

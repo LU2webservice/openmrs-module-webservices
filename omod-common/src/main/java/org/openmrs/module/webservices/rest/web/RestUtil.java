@@ -587,7 +587,10 @@ public class RestUtil implements GlobalPropertyListener {
 			String uri = (String) PropertyUtils.getProperty(created, "uri");
 			response.addHeader("Location", uri);
 		}
-		catch (Exception ex) {}
+		catch (Exception ex) {
+			// the created object has no 'uri' property - skip the Location header, but log why
+			log.debug("Could not set Location header for created object", ex);
+		}
 		return created;
 	}
 	
@@ -604,7 +607,10 @@ public class RestUtil implements GlobalPropertyListener {
 			String uri = (String) PropertyUtils.getProperty(updated, "uri");
 			response.addHeader("Location", uri);
 		}
-		catch (Exception ex) {}
+		catch (Exception ex) {
+			// the updated object has no 'uri' property - skip the Location header, but log why
+			log.debug("Could not set Location header for updated object", ex);
+		}
 		return updated;
 	}
 	
@@ -738,8 +744,12 @@ public class RestUtil implements GlobalPropertyListener {
 				                + ") does not appear to be a valid URL / URI.  Strange, since we got it from the system...",
 				        e);
 			}
-			catch (IllegalArgumentException ex) {}
-			
+			catch (IllegalArgumentException ex) {
+				// resource is not a file-system directory (e.g. inside a jar) - leave directory null
+				// and continue, but log so the skipped resource is traceable
+				log.debug("Resource " + resource + " is not a file-system directory, skipping", ex);
+			}
+
 			//If folder exists, look for all resource class files in it.
 			if (directory != null && directory.exists()) {
 				
