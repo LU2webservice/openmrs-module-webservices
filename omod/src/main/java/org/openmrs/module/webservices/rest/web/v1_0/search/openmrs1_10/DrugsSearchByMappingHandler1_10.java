@@ -9,15 +9,12 @@
  */
 package org.openmrs.module.webservices.rest.web.v1_0.search.openmrs1_10;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.openmrs.ConceptMapType;
 import org.openmrs.ConceptSource;
 import org.openmrs.Drug;
-import org.openmrs.api.ConceptService;
 import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.resource.api.PageableResult;
@@ -25,38 +22,25 @@ import org.openmrs.module.webservices.rest.web.resource.api.SearchConfig;
 import org.openmrs.module.webservices.rest.web.resource.api.SearchHandler;
 import org.openmrs.module.webservices.rest.web.resource.api.SearchQuery;
 import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
-import org.openmrs.module.webservices.rest.web.response.ObjectNotFoundException;
-import org.openmrs.module.webservices.rest.web.response.ResponseException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
- * Allows finding drugs by mapping
+ * Allows finding drugs by mapping. The shared request parsing lives in
+ * {@link BaseDrugSearchByMappingHandler1_10}; this handler only adds the multi-drug lookup.
  */
 @Component
-public class DrugsSearchByMappingHandler1_10 implements SearchHandler {
-	
-	public static final String REQUEST_PARAM_CODE = "code";
-	
-	public static final String REQUEST_PARAM_SOURCE = "source";
-	
-	public static final String REQUEST_PARAM_MAP_TYPES = "preferredMapTypes";
-	
-	@Autowired
-	@Qualifier("conceptService")
-	ConceptService conceptService;
-	
+public class DrugsSearchByMappingHandler1_10 extends BaseDrugSearchByMappingHandler1_10 {
+
 	SearchQuery searchQuery = new SearchQuery.Builder(
 	        "Allows you to find drugs by source, code and preferred map types(comma delimited). "
 	                + "Gets the best matching drug, i.e. matching the earliest ConceptMapType passed if there are "
 	                + "multiple matches for the highest-priority ConceptMapType")
 	        .withRequiredParameters(REQUEST_PARAM_SOURCE)
 	        .withOptionalParameters(REQUEST_PARAM_CODE, REQUEST_PARAM_MAP_TYPES).build();
-	
+
 	private final SearchConfig searchConfig = new SearchConfig("getDrugsByMapping", RestConstants.VERSION_1 + "/drug",
-			Collections.singletonList("1.10.* - 9.*"), searchQuery);
-	
+	        Collections.singletonList("1.10.* - 9.*"), searchQuery);
+
 	/**
 	 * @see SearchHandler#getSearchConfig()
 	 */
@@ -64,38 +48,13 @@ public class DrugsSearchByMappingHandler1_10 implements SearchHandler {
 	public SearchConfig getSearchConfig() {
 		return searchConfig;
 	}
-	
+
 	/**
-	 * @see SearchHandler#search(RequestContext)
+	 * @see BaseDrugSearchByMappingHandler1_10#findDrugs(String, ConceptSource, List, RequestContext)
 	 */
 	@Override
-	public PageableResult search(RequestContext context) throws ResponseException {
-		String code = context.getParameter(REQUEST_PARAM_CODE);
-		String sourceUuid = context.getParameter(REQUEST_PARAM_SOURCE);
-		String mapTypesUuids = context.getParameter(REQUEST_PARAM_MAP_TYPES);
-		ConceptSource source = null;
-		if (StringUtils.isNotBlank(sourceUuid)) {
-			source = conceptService.getConceptSourceByUuid(sourceUuid);
-			if (source == null) {
-				throw new ObjectNotFoundException();
-			}
-		}
-		
-		List<ConceptMapType> mapTypesInOrderOfPreference = null;
-		if (StringUtils.isNotBlank(mapTypesUuids)) {
-			String[] uuids = StringUtils.split(mapTypesUuids, ",");
-			for (String uuid : uuids) {
-				ConceptMapType mapType = conceptService.getConceptMapTypeByUuid(uuid.trim());
-				if (mapType == null) {
-					throw new ObjectNotFoundException();
-				}
-				if (mapTypesInOrderOfPreference == null) {
-					mapTypesInOrderOfPreference = new ArrayList<ConceptMapType>();
-				}
-				mapTypesInOrderOfPreference.add(mapType);
-			}
-		}
-		
+	protected PageableResult findDrugs(String code, ConceptSource source,
+	        List<ConceptMapType> mapTypesInOrderOfPreference, RequestContext context) {
 		List<Drug> drugs = conceptService.getDrugsByMapping(code, source, mapTypesInOrderOfPreference,
 		    context.getIncludeAll());
 		return new NeedsPaging<Drug>(drugs, context);
