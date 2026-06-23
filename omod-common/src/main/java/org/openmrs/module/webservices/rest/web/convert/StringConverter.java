@@ -87,7 +87,7 @@ public class StringConverter implements TypeConverter {
 		catch (Exception ex) {
 			// no usable valueOf(String) for this type - fall through to the fail-fast exception below
 			// instead of silently swallowing the cause
-			log.debug("No usable valueOf(String) on " + toClass + " for value '" + string + "'", ex);
+			log.debug("No usable valueOf(String) on " + toClass, ex);
 		}
 
 		throw new ConversionException("Don't know how to convert from " + source.getClass() + " to " + toType, null);
