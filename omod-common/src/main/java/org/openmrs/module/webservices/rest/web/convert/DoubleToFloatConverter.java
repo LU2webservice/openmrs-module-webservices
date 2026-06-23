@@ -26,6 +26,6 @@ public class DoubleToFloatConverter implements TypeConverter {
 
 	@Override
 	public Object convert(Object source, Class<?> toClass, Type toType) throws ConversionException {
-		return new Float((Double) source);
+		return Float.valueOf(((Double) source).floatValue());
 	}
 }
